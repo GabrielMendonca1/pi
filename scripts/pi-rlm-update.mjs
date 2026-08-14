@@ -125,9 +125,38 @@ function verifyOfficialIdentity(sourceDir) {
 	return pkg;
 }
 
+function installOverlayBundle(store) {
+	const relativeFiles = [
+		"overlay/manifest.json",
+		"overlay/rlm.patch",
+		"overlay/README.md",
+		"scripts/pi-rlm-update.mjs",
+		"scripts/pi-rlm-wrapper.sh",
+	];
+	const fingerprint = createHash("sha256");
+	for (const relative of relativeFiles) fingerprint.update(readFileSync(join(repoRoot, relative)));
+	const bundleId = `${manifest.overlayCommit.slice(0, 12)}-${fingerprint.digest("hex").slice(0, 12)}`;
+	const bundle = join(store, "overlay-bundles", bundleId);
+	if (existsSync(bundle)) return bundle;
+
+	const temporary = `${bundle}.tmp-${process.pid}`;
+	rmSync(temporary, { recursive: true, force: true });
+	for (const relative of relativeFiles) {
+		const destination = join(temporary, relative);
+		mkdirSync(dirname(destination), { recursive: true });
+		copyFileSync(join(repoRoot, relative), destination);
+	}
+	chmodSync(join(temporary, "scripts", "pi-rlm-update.mjs"), 0o755);
+	chmodSync(join(temporary, "scripts", "pi-rlm-wrapper.sh"), 0o755);
+	mkdirSync(dirname(bundle), { recursive: true });
+	renameSync(temporary, bundle);
+	return bundle;
+}
+
 function installWrapper(store) {
-	const template = readFileSync(join(repoRoot, "scripts", "pi-rlm-wrapper.sh"), "utf8");
-	const rendered = template.replaceAll("__OVERLAY_REPO__", repoRoot);
+	const overlayRepo = installOverlayBundle(store);
+	const template = readFileSync(join(overlayRepo, "scripts", "pi-rlm-wrapper.sh"), "utf8");
+	const rendered = template.replaceAll("__OVERLAY_REPO__", overlayRepo);
 	const wrapper = join(store, "bin", "pi-wrapper");
 	mkdirSync(dirname(wrapper), { recursive: true });
 	const temporary = `${wrapper}.tmp-${process.pid}`;
@@ -157,7 +186,7 @@ function installWrapper(store) {
 		}
 		atomicSymlink(wrapper, localPi);
 	}
-	return { wrapper, localPi };
+	return { wrapper, localPi, overlayRepo };
 }
 
 function activateRelease(store, releaseDir, metadata) {

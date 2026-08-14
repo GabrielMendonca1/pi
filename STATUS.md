@@ -11,7 +11,7 @@ Run genuine upstream Pi for every release while preserving RLM as a local, versi
 - RLM ported onto official Pi `e429d90b80` with persistent IPython, recursive host bridge, isolated Python bootstrap, Pi paths/branding, and extension-tool preservation.
 - Core overlay committed as `1ef2653dca`.
 - Reproducible patch recorded in `overlay/rlm.patch` with SHA-256 `c8b09609cf3806a2e12b223976c56a0d9c1eaebea1caecc502a36ae21051d864`.
-- Updater and stable wrapper implement official-release resolution, identity checks, three-way patching, full validation, atomic activation, dated launcher backup, and current/previous rollback.
+- Updater and stable wrapper implement official-release resolution, identity checks, three-way patching, full validation, atomic activation, dated launcher backup, and current/previous rollback. A fingerprinted overlay bundle is installed into the local store, so future `pi update` runs do not depend on the checkout.
 - Verified against official `v0.84.2` / `914cf1472e`: repository check, build, Python bootstrap, 4 focused tests, package contents, and CLI smoke test all pass.
 - Conflict simulation verified failure-safe behavior; wrapper routing tests cover self, all, extension/model delegation, explicit overlay update, and rollback.
 - Installed exact official `v0.84.2` + overlay locally under `~/.local/share/pi-rlm-overlay`; the previous `/opt/homebrew/bin/pi` symlink is preserved in a dated backup.

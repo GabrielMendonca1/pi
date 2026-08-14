@@ -41,12 +41,13 @@ pi rlm-rollback
 The default store is `~/.local/share/pi-rlm-overlay`:
 
 - `releases/<version>-<official>-<overlay>/`: immutable npm installation
+- `overlay-bundles/<overlay>-<fingerprint>/`: immutable updater, wrapper template, manifest, documentation, and patch used by `pi update`
 - `current`: active release symlink
 - `previous`: prior release symlink
 - `bin/pi-wrapper`: stable launcher
 - `backups/<timestamp>/pi`: launcher that preceded the overlay activation (with an exact `restore.txt` command)
 
-The installer replaces only `~/.local/bin/pi`, after creating a dated backup when one already exists. It does not remove or modify Prime Agent, Homebrew packages, `~/.prime`, or existing Pi state under `~/.pi`.
+The installer copies a self-contained overlay bundle into the store, so future updates do not depend on this checkout. It replaces only `~/.local/bin/pi`, after creating a dated backup when one already exists. It does not remove or modify Prime Agent, Homebrew packages, `~/.prime`, or existing Pi state under `~/.pi`.
 
 Exact automatic rollback:
 
