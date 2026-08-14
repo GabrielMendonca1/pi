@@ -277,6 +277,7 @@ describe("shouldCompact", () => {
 			enabled: true,
 			reserveTokens: 10000,
 			keepRecentTokens: 20000,
+			strategy: "append",
 		};
 
 		expect(shouldCompact(95000, 100000, settings)).toBe(true);
@@ -288,6 +289,7 @@ describe("shouldCompact", () => {
 			enabled: false,
 			reserveTokens: 10000,
 			keepRecentTokens: 20000,
+			strategy: "append",
 		};
 
 		expect(shouldCompact(95000, 100000, settings)).toBe(false);
@@ -502,6 +504,12 @@ describe("prepareCompaction with previous compaction", () => {
 		expect(summarizedText).toContain("user msg 3 - kept by compaction1");
 		expect(summarizedText).not.toContain("First summary");
 		expect(preparation!.previousSummary).toBe("First summary");
+
+		const contextPrefixText = extractText(preparation!.contextPrefixMessages);
+		expect(preparation!.contextPrefixMessages[0]?.role).toBe("compactionSummary");
+		expect(contextPrefixText).toContain("First summary");
+		expect(contextPrefixText).toContain("user msg 2 - kept by compaction1");
+		expect(contextPrefixText).toContain("user msg 3 - kept by compaction1");
 	});
 });
 

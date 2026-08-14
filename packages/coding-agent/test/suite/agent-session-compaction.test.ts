@@ -1,12 +1,14 @@
 import {
 	type AssistantMessage,
+	type Context,
 	createAssistantMessageEventStream,
 	fauxAssistantMessage,
 	type Model,
+	type SimpleStreamOptions,
 } from "@earendil-works/pi-ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { estimateTokens } from "../../src/core/compaction/index.ts";
-import { createHarness, getUserTexts, type Harness } from "./harness.ts";
+import { createHarness, getMessageText, getUserTexts, type Harness } from "./harness.ts";
 
 type SessionWithCompactionInternals = {
 	_checkCompaction: (assistantMessage: AssistantMessage, skipAbortedCheck?: boolean) => Promise<boolean>;
@@ -209,6 +211,70 @@ describe("AgentSession compaction characterization", () => {
 
 		expect(result.summary).toContain("summary from custom stream");
 		expect(getStreamCallCount()).toBe(1);
+	});
+
+	it("reuses the normal context prefix for pi-generated compaction", async () => {
+		const harness = await createHarness({
+			settings: { compaction: { keepRecentTokens: 1, strategy: "append" } },
+		});
+		harnesses.push(harness);
+		harness.session.agent.sessionId = "cache-aware-compaction";
+		const normalSystemPrompt = harness.session.agent.state.systemPrompt;
+		let summaryContext: Context | undefined;
+		let summaryOptions: SimpleStreamOptions | undefined;
+		harness.setResponses([
+			fauxAssistantMessage("recent response retained after compaction"),
+			(context, options) => {
+				summaryContext = context;
+				summaryOptions = options;
+				return fauxAssistantMessage("## Goal\nCache-aware summary");
+			},
+		]);
+
+		await harness.session.prompt("old request included in cached prefix");
+		const result = await harness.session.compact();
+
+		expect(summaryContext?.systemPrompt).toBe(normalSystemPrompt);
+		expect(summaryContext?.tools?.map((tool) => tool.name)).toEqual(
+			harness.session.agent.state.tools.map((tool) => tool.name),
+		);
+		const summaryRequestText = summaryContext?.messages.map((message) => JSON.stringify(message)).join("\n") ?? "";
+		expect(summaryRequestText).toContain("old request included in cached prefix");
+		expect(summaryRequestText).not.toContain("recent response retained after compaction");
+		expect(summaryRequestText).toContain("Do not continue the task");
+		expect(summaryOptions?.sessionId).toBe("cache-aware-compaction");
+		expect(summaryOptions?.cacheRetention).not.toBe("none");
+		expect(result.usage?.cacheRead).toBeGreaterThan(0);
+		expect(
+			harness.session.messages.some((message) => getMessageText(message).includes("recent response retained")),
+		).toBe(true);
+	});
+
+	it("uses standalone compaction when configured", async () => {
+		const harness = await createHarness({
+			settings: { compaction: { keepRecentTokens: 1, strategy: "standalone" } },
+		});
+		harnesses.push(harness);
+		harness.session.agent.sessionId = "normal-session";
+		let summaryContext: Context | undefined;
+		let summaryOptions: SimpleStreamOptions | undefined;
+		harness.setResponses([
+			fauxAssistantMessage("recent response retained after standalone compaction"),
+			(context, options) => {
+				summaryContext = context;
+				summaryOptions = options;
+				return fauxAssistantMessage("## Goal\nStandalone summary");
+			},
+		]);
+
+		await harness.session.prompt("old standalone request");
+		await harness.session.compact();
+
+		expect(summaryContext?.systemPrompt).toContain("context summarization assistant");
+		expect(summaryContext?.messages).toHaveLength(1);
+		expect(summaryContext?.tools).toBeUndefined();
+		expect(summaryOptions?.cacheRetention).toBe("none");
+		expect(summaryOptions?.sessionId).not.toBe("normal-session");
 	});
 
 	it("manually compacts with provider-resolved bearer auth", async () => {

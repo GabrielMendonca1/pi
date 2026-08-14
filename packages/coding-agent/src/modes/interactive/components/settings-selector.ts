@@ -13,6 +13,8 @@ import {
 	Spacer,
 	Text,
 } from "@earendil-works/pi-tui";
+import type { CompactionStrategy } from "../../../core/compaction/compaction.ts";
+import { areExperimentalFeaturesEnabled } from "../../../core/experimental.ts";
 import { formatHttpIdleTimeoutMs, HTTP_IDLE_TIMEOUT_CHOICES } from "../../../core/http-dispatcher.ts";
 import type {
 	DefaultProjectTrust,
@@ -58,6 +60,7 @@ const DEFAULT_PROJECT_TRUST_BY_LABEL = new Map(
 
 export interface SettingsConfig {
 	autoCompact: boolean;
+	compactionStrategy: CompactionStrategy;
 	showImages: boolean;
 	imageWidthCells: number;
 	autoResizeImages: boolean;
@@ -95,6 +98,7 @@ export interface SettingsConfig {
 
 export interface SettingsCallbacks {
 	onAutoCompactChange: (enabled: boolean) => void;
+	onCompactionStrategyChange: (strategy: CompactionStrategy) => void;
 	onShowImagesChange: (enabled: boolean) => void;
 	onImageWidthCellsChange: (width: number) => void;
 	onAutoResizeImagesChange: (enabled: boolean) => void;
@@ -771,6 +775,17 @@ export class SettingsSelectorComponent extends Container {
 			values: ["true", "false"],
 		});
 
+		if (areExperimentalFeaturesEnabled()) {
+			const autoCompactIndex = items.findIndex((item) => item.id === "autocompact");
+			items.splice(autoCompactIndex + 1, 0, {
+				id: "compaction-strategy",
+				label: "Compaction strategy",
+				description: "Standalone starts a fresh summary request; append reuses the conversation prefix",
+				currentValue: config.compactionStrategy,
+				values: ["standalone", "append"],
+			});
+		}
+
 		// Add borders
 		this.addChild(new DynamicBorder());
 
@@ -782,6 +797,9 @@ export class SettingsSelectorComponent extends Container {
 				switch (id) {
 					case "autocompact":
 						callbacks.onAutoCompactChange(newValue === "true");
+						break;
+					case "compaction-strategy":
+						callbacks.onCompactionStrategyChange(newValue as CompactionStrategy);
 						break;
 					case "show-images":
 						callbacks.onShowImagesChange(newValue === "true");

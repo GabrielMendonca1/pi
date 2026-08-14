@@ -1,5 +1,5 @@
 import { setKeybindings } from "@earendil-works/pi-tui";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { KeybindingsManager } from "../src/core/keybindings.ts";
 import {
 	type SettingsCallbacks,
@@ -9,9 +9,23 @@ import {
 import { initTheme } from "../src/modes/interactive/theme/theme.ts";
 
 describe("SettingsSelectorComponent", () => {
+	const originalPiExperimental = process.env.PI_EXPERIMENTAL;
+
 	beforeAll(() => {
 		initTheme("dark");
 		setKeybindings(new KeybindingsManager());
+	});
+
+	beforeEach(() => {
+		delete process.env.PI_EXPERIMENTAL;
+	});
+
+	afterEach(() => {
+		if (originalPiExperimental === undefined) {
+			delete process.env.PI_EXPERIMENTAL;
+		} else {
+			process.env.PI_EXPERIMENTAL = originalPiExperimental;
+		}
 	});
 
 	it("cycles through fullscreen settings", () => {
@@ -39,5 +53,40 @@ describe("SettingsSelectorComponent", () => {
 		expect(onExitOutputChange.mock.calls.flat()).toEqual(["resume-hint", "transcript"]);
 		cycle("Fullscreen scrollbar", 3);
 		expect(onScrollbarChange.mock.calls.flat()).toEqual(["always", "hidden", "auto"]);
+	});
+
+	it("only shows the compaction strategy when experimental features are enabled", () => {
+		const config = {
+			compactionStrategy: "standalone",
+			warnings: {},
+			availableThinkingLevels: [],
+			availableThemes: [],
+		} as unknown as SettingsConfig;
+		const callbacks = {} as SettingsCallbacks;
+
+		const normalList = new SettingsSelectorComponent(config, callbacks).getSettingsList();
+		expect(normalList.render(120).join("\n")).not.toContain("Compaction strategy");
+
+		process.env.PI_EXPERIMENTAL = "1";
+		const experimentalList = new SettingsSelectorComponent(config, callbacks).getSettingsList();
+		expect(experimentalList.render(120).join("\n")).toContain("Compaction strategy");
+	});
+
+	it("changes the experimental compaction strategy", () => {
+		process.env.PI_EXPERIMENTAL = "1";
+		const onCompactionStrategyChange = vi.fn();
+		const config = {
+			compactionStrategy: "standalone",
+			warnings: {},
+			availableThinkingLevels: [],
+			availableThemes: [],
+		} as unknown as SettingsConfig;
+		const callbacks = { onCompactionStrategyChange } as unknown as SettingsCallbacks;
+		const list = new SettingsSelectorComponent(config, callbacks).getSettingsList();
+
+		for (const character of "Compaction strategy") list.handleInput(character);
+		list.handleInput("\r");
+
+		expect(onCompactionStrategyChange).toHaveBeenCalledWith("append");
 	});
 });

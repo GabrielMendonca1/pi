@@ -7,12 +7,14 @@ import { dirname, join } from "path";
 import lockfile from "proper-lockfile";
 import { CONFIG_DIR_NAME, getAgentDir } from "../config.ts";
 import { normalizePath, resolvePath } from "../utils/paths.ts";
+import type { CompactionStrategy, CompactionSettings as ResolvedCompactionSettings } from "./compaction/compaction.ts";
 import { DEFAULT_HTTP_IDLE_TIMEOUT_MS, parseHttpIdleTimeoutMs } from "./http-dispatcher.ts";
 
 export interface CompactionSettings {
 	enabled?: boolean; // default: true
 	reserveTokens?: number; // default: 16384
 	keepRecentTokens?: number; // default: 20000
+	strategy?: CompactionStrategy; // default: "standalone"
 }
 
 export interface BranchSummarySettings {
@@ -786,11 +788,26 @@ export class SettingsManager {
 		return this.settings.compaction?.keepRecentTokens ?? 20000;
 	}
 
-	getCompactionSettings(): { enabled: boolean; reserveTokens: number; keepRecentTokens: number } {
+	getCompactionStrategy(): CompactionStrategy {
+		const strategy = this.settings.compaction?.strategy;
+		return strategy === "standalone" || strategy === "append" ? strategy : "standalone";
+	}
+
+	setCompactionStrategy(strategy: CompactionStrategy): void {
+		if (!this.globalSettings.compaction) {
+			this.globalSettings.compaction = {};
+		}
+		this.globalSettings.compaction.strategy = strategy;
+		this.markModified("compaction", "strategy");
+		this.save();
+	}
+
+	getCompactionSettings(): ResolvedCompactionSettings {
 		return {
 			enabled: this.getCompactionEnabled(),
 			reserveTokens: this.getCompactionReserveTokens(),
 			keepRecentTokens: this.getCompactionKeepRecentTokens(),
+			strategy: this.getCompactionStrategy(),
 		};
 	}
 

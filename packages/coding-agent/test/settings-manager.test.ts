@@ -198,6 +198,42 @@ describe("SettingsManager", () => {
 		});
 	});
 
+	describe("compaction strategy", () => {
+		it("defaults to standalone and reads configured strategies", () => {
+			expect(SettingsManager.inMemory().getCompactionSettings().strategy).toBe("standalone");
+			expect(
+				SettingsManager.inMemory({ compaction: { strategy: "standalone" } }).getCompactionSettings().strategy,
+			).toBe("standalone");
+		});
+
+		it("persists strategy changes", async () => {
+			const manager = SettingsManager.create(projectDir, agentDir);
+
+			manager.setCompactionStrategy("append");
+			await manager.flush();
+
+			expect(manager.getCompactionSettings().strategy).toBe("append");
+			const savedSettings = JSON.parse(readFileSync(join(agentDir, "settings.json"), "utf-8"));
+			expect(savedSettings.compaction.strategy).toBe("append");
+		});
+
+		it("uses the project strategy override", () => {
+			writeFileSync(join(agentDir, "settings.json"), JSON.stringify({ compaction: { strategy: "standalone" } }));
+			writeFileSync(
+				join(projectDir, ".pi", "settings.json"),
+				JSON.stringify({ compaction: { strategy: "append" } }),
+			);
+
+			expect(SettingsManager.create(projectDir, agentDir).getCompactionSettings().strategy).toBe("append");
+		});
+
+		it("falls back to standalone for unsupported values", () => {
+			writeFileSync(join(agentDir, "settings.json"), JSON.stringify({ compaction: { strategy: "unsupported" } }));
+
+			expect(SettingsManager.create(projectDir, agentDir).getCompactionSettings().strategy).toBe("standalone");
+		});
+	});
+
 	describe("theme setting", () => {
 		it("stores slash-separated automatic theme settings separately from fixed theme names", async () => {
 			const settingsPath = join(agentDir, "settings.json");
