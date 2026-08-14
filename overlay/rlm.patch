@@ -1,0 +1,2231 @@
+diff --git a/.gitignore b/.gitignore
+index 0e241a9dc..d29f676d9 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -42,3 +42,4 @@ plans/
+ .pi/hf-sessions/
+ .pi/hf-sessions-backup/
+ collect.sh
++.kernel-venv/
+diff --git a/package-lock.json b/package-lock.json
+index 1f77aa69a..d39b2d690 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -2672,6 +2672,15 @@
+ 			"dev": true,
+ 			"license": "ISC"
+ 		},
++		"node_modules/cmake-ts": {
++			"version": "1.0.2",
++			"resolved": "https://registry.npmjs.org/cmake-ts/-/cmake-ts-1.0.2.tgz",
++			"integrity": "sha512-5l++JHE7MxFuyV/OwJf3ek7ZZN1aGPFPM5oUz6AnK5inQAPe4TFXRMz5sA2qg2FRgByPWdqO+gSfIPo8GzoKNQ==",
++			"license": "MIT",
++			"bin": {
++				"cmake-ts": "build/main.js"
++			}
++		},
+ 		"node_modules/commander": {
+ 			"version": "12.1.0",
+ 			"resolved": "https://registry.npmjs.org/commander/-/commander-12.1.0.tgz",
+@@ -5377,6 +5386,29 @@
+ 				"url": "https://github.com/sponsors/eemeli"
+ 			}
+ 		},
++		"node_modules/zeromq": {
++			"version": "6.5.0",
++			"resolved": "https://registry.npmjs.org/zeromq/-/zeromq-6.5.0.tgz",
++			"integrity": "sha512-vWOrt19lvcXTxu5tiHXfEGQuldSlU+qZn2TT+4EbRQzaciWGwNZ99QQTolQOmcwVgZLodv+1QfC6UZs2PX/6pQ==",
++			"hasInstallScript": true,
++			"license": "MIT AND MPL-2.0",
++			"dependencies": {
++				"cmake-ts": "1.0.2",
++				"node-addon-api": "^8.3.1"
++			},
++			"engines": {
++				"node": ">= 12"
++			}
++		},
++		"node_modules/zeromq/node_modules/node-addon-api": {
++			"version": "8.9.1",
++			"resolved": "https://registry.npmjs.org/node-addon-api/-/node-addon-api-8.9.1.tgz",
++			"integrity": "sha512-4eUQWVPCUUUiBjLnHS3cXWeC6ryoPUc0U3rP7IuzapoGbzMqd/r6KKO0clr0b+snQhsrueFEhCZDdK+LK7hxKg==",
++			"license": "MIT",
++			"engines": {
++				"node": "^18 || ^20 || >= 21"
++			}
++		},
+ 		"node_modules/zod": {
+ 			"version": "3.25.76",
+ 			"resolved": "https://registry.npmjs.org/zod/-/zod-3.25.76.tgz",
+@@ -5518,7 +5550,8 @@
+ 				"semver": "7.8.0",
+ 				"typebox": "1.3.7",
+ 				"undici": "8.9.0",
+-				"yaml": "2.9.0"
++				"yaml": "2.9.0",
++				"zeromq": "6.5.0"
+ 			},
+ 			"bin": {
+ 				"pi": "dist/cli.js"
+diff --git a/packages/coding-agent/install-lock/package-lock.json b/packages/coding-agent/install-lock/package-lock.json
+index 5f43256d3..8eaff039d 100644
+--- a/packages/coding-agent/install-lock/package-lock.json
++++ b/packages/coding-agent/install-lock/package-lock.json
+@@ -525,7 +525,8 @@
+ 				"semver": "7.8.0",
+ 				"typebox": "1.3.7",
+ 				"undici": "8.9.0",
+-				"yaml": "2.9.0"
++				"yaml": "2.9.0",
++				"zeromq": "6.5.0"
+ 			},
+ 			"optionalDependencies": {
+ 				"@mariozechner/clipboard": "0.3.9"
+@@ -1067,6 +1068,15 @@
+ 				"url": "https://github.com/chalk/chalk?sponsor=1"
+ 			}
+ 		},
++		"node_modules/cmake-ts": {
++			"version": "1.0.2",
++			"resolved": "https://registry.npmjs.org/cmake-ts/-/cmake-ts-1.0.2.tgz",
++			"integrity": "sha512-5l++JHE7MxFuyV/OwJf3ek7ZZN1aGPFPM5oUz6AnK5inQAPe4TFXRMz5sA2qg2FRgByPWdqO+gSfIPo8GzoKNQ==",
++			"license": "MIT",
++			"bin": {
++				"cmake-ts": "build/main.js"
++			}
++		},
+ 		"node_modules/cross-spawn": {
+ 			"version": "7.0.6",
+ 			"resolved": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz",
+@@ -1823,6 +1833,29 @@
+ 			"funding": {
+ 				"url": "https://github.com/sponsors/eemeli"
+ 			}
++		},
++		"node_modules/zeromq": {
++			"version": "6.5.0",
++			"resolved": "https://registry.npmjs.org/zeromq/-/zeromq-6.5.0.tgz",
++			"integrity": "sha512-vWOrt19lvcXTxu5tiHXfEGQuldSlU+qZn2TT+4EbRQzaciWGwNZ99QQTolQOmcwVgZLodv+1QfC6UZs2PX/6pQ==",
++			"license": "MIT AND MPL-2.0",
++			"dependencies": {
++				"cmake-ts": "1.0.2",
++				"node-addon-api": "^8.3.1"
++			},
++			"engines": {
++				"node": ">= 12"
++			},
++			"hasInstallScript": true
++		},
++		"node_modules/zeromq/node_modules/node-addon-api": {
++			"version": "8.9.1",
++			"resolved": "https://registry.npmjs.org/node-addon-api/-/node-addon-api-8.9.1.tgz",
++			"integrity": "sha512-4eUQWVPCUUUiBjLnHS3cXWeC6ryoPUc0U3rP7IuzapoGbzMqd/r6KKO0clr0b+snQhsrueFEhCZDdK+LK7hxKg==",
++			"license": "MIT",
++			"engines": {
++				"node": "^18 || ^20 || >= 21"
++			}
+ 		}
+ 	}
+ }
+diff --git a/packages/coding-agent/npm-shrinkwrap.json b/packages/coding-agent/npm-shrinkwrap.json
+index 2f2c309b3..c4b01d364 100644
+--- a/packages/coding-agent/npm-shrinkwrap.json
++++ b/packages/coding-agent/npm-shrinkwrap.json
+@@ -29,7 +29,8 @@
+ 				"semver": "7.8.0",
+ 				"typebox": "1.3.7",
+ 				"undici": "8.9.0",
+-				"yaml": "2.9.0"
++				"yaml": "2.9.0",
++				"zeromq": "6.5.0"
+ 			},
+ 			"optionalDependencies": {
+ 				"@mariozechner/clipboard": "0.3.9"
+@@ -1057,6 +1058,15 @@
+ 				"url": "https://github.com/chalk/chalk?sponsor=1"
+ 			}
+ 		},
++		"node_modules/cmake-ts": {
++			"version": "1.0.2",
++			"resolved": "https://registry.npmjs.org/cmake-ts/-/cmake-ts-1.0.2.tgz",
++			"integrity": "sha512-5l++JHE7MxFuyV/OwJf3ek7ZZN1aGPFPM5oUz6AnK5inQAPe4TFXRMz5sA2qg2FRgByPWdqO+gSfIPo8GzoKNQ==",
++			"license": "MIT",
++			"bin": {
++				"cmake-ts": "build/main.js"
++			}
++		},
+ 		"node_modules/cross-spawn": {
+ 			"version": "7.0.6",
+ 			"resolved": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz",
+@@ -1813,6 +1823,29 @@
+ 			"funding": {
+ 				"url": "https://github.com/sponsors/eemeli"
+ 			}
++		},
++		"node_modules/zeromq": {
++			"version": "6.5.0",
++			"resolved": "https://registry.npmjs.org/zeromq/-/zeromq-6.5.0.tgz",
++			"integrity": "sha512-vWOrt19lvcXTxu5tiHXfEGQuldSlU+qZn2TT+4EbRQzaciWGwNZ99QQTolQOmcwVgZLodv+1QfC6UZs2PX/6pQ==",
++			"license": "MIT AND MPL-2.0",
++			"dependencies": {
++				"cmake-ts": "1.0.2",
++				"node-addon-api": "^8.3.1"
++			},
++			"engines": {
++				"node": ">= 12"
++			},
++			"hasInstallScript": true
++		},
++		"node_modules/zeromq/node_modules/node-addon-api": {
++			"version": "8.9.1",
++			"resolved": "https://registry.npmjs.org/node-addon-api/-/node-addon-api-8.9.1.tgz",
++			"integrity": "sha512-4eUQWVPCUUUiBjLnHS3cXWeC6ryoPUc0U3rP7IuzapoGbzMqd/r6KKO0clr0b+snQhsrueFEhCZDdK+LK7hxKg==",
++			"license": "MIT",
++			"engines": {
++				"node": "^18 || ^20 || >= 21"
++			}
+ 		}
+ 	}
+ }
+diff --git a/packages/coding-agent/package.json b/packages/coding-agent/package.json
+index 58d9dd64d..5843153d8 100644
+--- a/packages/coding-agent/package.json
++++ b/packages/coding-agent/package.json
+@@ -36,8 +36,8 @@
+ 		"clean": "shx rm -rf dist",
+ 		"build": "tsgo -p tsconfig.build.json && shx chmod +x dist/cli.js dist/rpc-entry.js && npm run copy-assets",
+ 		"build:binary": "npm --prefix ../tui run build && npm --prefix ../telemetry run build && npm --prefix ../ai run build && npm --prefix ../agent run build && npm --prefix ../protocol run build && npm --prefix ../client run build && npm run build && bun build --compile --no-compile-autoload-bunfig ./dist/bun/cli.js ./src/utils/image-resize-worker.ts --outfile dist/pi && npm run copy-binary-assets",
+-		"copy-assets": "shx mkdir -p dist/modes/interactive/theme && shx cp src/modes/interactive/theme/*.json dist/modes/interactive/theme/ && shx mkdir -p dist/modes/interactive/assets && shx cp src/modes/interactive/assets/*.png dist/modes/interactive/assets/ && shx mkdir -p dist/core/export-html/vendor && shx cp src/core/export-html/template.html src/core/export-html/template.css src/core/export-html/template.js dist/core/export-html/ && shx cp src/core/export-html/vendor/*.js dist/core/export-html/vendor/",
+-		"copy-binary-assets": "shx cp package.json dist/ && shx cp README.md dist/ && shx cp CHANGELOG.md dist/ && shx mkdir -p dist/theme && shx cp src/modes/interactive/theme/*.json dist/theme/ && shx mkdir -p dist/assets && shx cp src/modes/interactive/assets/*.png dist/assets/ && shx mkdir -p dist/export-html/vendor && shx cp src/core/export-html/template.html dist/export-html/ && shx cp src/core/export-html/vendor/*.js dist/export-html/vendor/ && shx cp -r docs dist/ && shx cp -r examples dist/ && shx cp ../../node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm dist/",
++		"copy-assets": "shx mkdir -p dist/modes/interactive/theme && shx cp src/modes/interactive/theme/*.json dist/modes/interactive/theme/ && shx mkdir -p dist/modes/interactive/assets && shx cp src/modes/interactive/assets/*.png dist/modes/interactive/assets/ && shx mkdir -p dist/core/export-html/vendor && shx cp src/core/export-html/template.html src/core/export-html/template.css src/core/export-html/template.js dist/core/export-html/ && shx cp src/core/export-html/vendor/*.js dist/core/export-html/vendor/ && shx cp -r runtime dist/",
++		"copy-binary-assets": "shx cp package.json dist/ && shx cp README.md dist/ && shx cp CHANGELOG.md dist/ && shx mkdir -p dist/theme && shx cp src/modes/interactive/theme/*.json dist/theme/ && shx mkdir -p dist/assets && shx cp src/modes/interactive/assets/*.png dist/assets/ && shx mkdir -p dist/export-html/vendor && shx cp src/core/export-html/template.html dist/export-html/ && shx cp src/core/export-html/vendor/*.js dist/export-html/vendor/ && shx cp -r docs dist/ && shx cp -r examples dist/ && shx cp ../../node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm dist/ && shx cp -r runtime dist/",
+ 		"test": "vitest --run",
+ 		"shrinkwrap": "node ../../scripts/generate-coding-agent-shrinkwrap.mjs",
+ 		"prepublishOnly": "npm run clean && npm run build && npm run shrinkwrap"
+@@ -63,7 +63,8 @@
+ 		"semver": "7.8.0",
+ 		"typebox": "1.3.7",
+ 		"undici": "8.9.0",
+-		"yaml": "2.9.0"
++		"yaml": "2.9.0",
++		"zeromq": "6.5.0"
+ 	},
+ 	"overrides": {
+ 		"protobufjs": "7.6.5",
+diff --git a/packages/coding-agent/runtime/pyproject.toml b/packages/coding-agent/runtime/pyproject.toml
+new file mode 100644
+index 000000000..e5d4929a9
+--- /dev/null
++++ b/packages/coding-agent/runtime/pyproject.toml
+@@ -0,0 +1,9 @@
++[build-system]
++requires = ["setuptools>=68"]
++build-backend = "setuptools.build_meta"
++
++[project]
++name = "pi-rlm-runtime"
++version = "1.0.0"
++description = "Python bridge for pi recursive language model sessions"
++requires-python = ">=3.11"
+diff --git a/packages/coding-agent/runtime/src/rlm/__init__.py b/packages/coding-agent/runtime/src/rlm/__init__.py
+new file mode 100644
+index 000000000..20de1b253
+--- /dev/null
++++ b/packages/coding-agent/runtime/src/rlm/__init__.py
+@@ -0,0 +1,155 @@
++"""Tiny rlm-compatible kernel shim for pi."""
++
++from __future__ import annotations
++
++import asyncio
++import os
++import sys
++import types
++from dataclasses import dataclass, field
++from pathlib import Path
++from typing import Any
++
++try:
++    from ipykernel.comm import Comm
++except Exception:  # pragma: no cover - depends on ipykernel version
++    Comm = None  # type: ignore[assignment]
++
++try:
++    from IPython import get_ipython
++except Exception:  # pragma: no cover - only available in kernels
++    get_ipython = None  # type: ignore[assignment]
++
++
++@dataclass
++class TokenUsage:
++    prompt_tokens: int = 0
++    completion_tokens: int = 0
++
++    @property
++    def total(self) -> int:
++        return self.prompt_tokens + self.completion_tokens
++
++
++@dataclass
++class RLMResult:
++    answer: str
++    session_dir: Path | None = None
++    usage: TokenUsage = field(default_factory=TokenUsage)
++    turns: int = 0
++
++
++def _env_int(name: str, default: int) -> int:
++    raw = os.environ.get(name)
++    if raw is None or raw == "":
++        return default
++    try:
++        return int(raw)
++    except ValueError as exc:
++        raise RuntimeError(f"{name} must be an integer, got {raw!r}") from exc
++
++
++def _ensure_recursion_allowed() -> None:
++    depth = _env_int("RLM_DEPTH", 0)
++    max_depth = _env_int("RLM_MAX_DEPTH", 1)
++    if depth >= max_depth:
++        raise RuntimeError(
++            f"RLM recursion depth limit reached "
++            f"(RLM_DEPTH={depth}, RLM_MAX_DEPTH={max_depth})"
++        )
++
++
++def _install_control_comm_handlers() -> None:
++    """Let comm replies arrive on the control channel during an execute_request."""
++    if get_ipython is None:
++        return
++    shell = get_ipython()
++    kernel = getattr(shell, "kernel", None)
++    comm_manager = getattr(kernel, "comm_manager", None)
++    control_handlers = getattr(kernel, "control_handlers", None)
++    if comm_manager is None or not isinstance(control_handlers, dict):
++        return
++    control_handlers.setdefault("comm_msg", comm_manager.comm_msg)
++    control_handlers.setdefault("comm_close", comm_manager.comm_close)
++
++
++def _result_from_payload(payload: dict[str, Any]) -> RLMResult:
++    usage_payload = payload.get("usage")
++    usage = TokenUsage()
++    if isinstance(usage_payload, dict):
++        usage = TokenUsage(
++            prompt_tokens=int(usage_payload.get("prompt_tokens", 0)),
++            completion_tokens=int(usage_payload.get("completion_tokens", 0)),
++        )
++
++    session_dir_payload = payload.get("session_dir")
++    session_dir = Path(session_dir_payload) if isinstance(session_dir_payload, str) else None
++    return RLMResult(
++        answer=str(payload.get("answer", "")),
++        usage=usage,
++        turns=int(payload.get("turns", 0)),
++        session_dir=session_dir,
++    )
++
++
++async def run(prompt: str, **kwargs: Any) -> RLMResult:
++    """Run a recursive pi child through the TypeScript host."""
++    if not isinstance(prompt, str):
++        raise TypeError(f"prompt must be str, got {type(prompt).__name__}")
++    _ensure_recursion_allowed()
++    if Comm is None:
++        raise RuntimeError("Jupyter comm support is unavailable in this kernel")
++    _install_control_comm_handlers()
++
++    loop = asyncio.get_running_loop()
++    future: asyncio.Future[RLMResult] = loop.create_future()
++    comm = Comm(target_name="rlm.run", primary=False)
++
++    def _on_msg(msg: dict[str, Any]) -> None:
++        content = msg.get("content", {})
++        data = content.get("data", {}) if isinstance(content, dict) else {}
++        if not isinstance(data, dict):
++            return
++
++        status = data.get("status")
++        if status == "ok":
++            def _resolve_result() -> None:
++                if not future.done():
++                    future.set_result(_result_from_payload(data))
++                    comm.close()
++
++            loop.call_soon_threadsafe(_resolve_result)
++            return
++        if status == "error":
++            message = data.get("error") or "rlm.run failed"
++            def _resolve_error() -> None:
++                if not future.done():
++                    future.set_exception(RuntimeError(str(message)))
++                    comm.close()
++
++            loop.call_soon_threadsafe(_resolve_error)
++
++    comm.on_msg(_on_msg)
++    comm.open(data={"type": "run", "prompt": prompt, "kwargs": kwargs})
++    return await future
++
++
++class _RLMCallable:
++    async def run(self, prompt: str, **kwargs: Any) -> RLMResult:
++        return await run(prompt, **kwargs)
++
++    async def __call__(self, prompt: str, **kwargs: Any) -> RLMResult:
++        return await run(prompt, **kwargs)
++
++
++rlm = _RLMCallable()
++
++
++class _CallableModule(types.ModuleType):
++    async def __call__(self, prompt: str, **kwargs: Any) -> RLMResult:
++        return await run(prompt, **kwargs)
++
++
++sys.modules[__name__].__class__ = _CallableModule
++
++__all__ = ["RLMResult", "TokenUsage", "rlm", "run"]
+diff --git a/packages/coding-agent/src/cli/args.ts b/packages/coding-agent/src/cli/args.ts
+index 3c0e01b3c..a630016be 100644
+--- a/packages/coding-agent/src/cli/args.ts
++++ b/packages/coding-agent/src/cli/args.ts
+@@ -245,7 +245,7 @@ export function printHelp(extensionFlags?: ExtensionFlag[]): void {
+ 					})
+ 					.join("\n")}\n`
+ 			: "";
+-	console.log(`${chalk.bold(APP_NAME)} - AI coding assistant with read, bash, edit, write tools
++	console.log(`${chalk.bold(APP_NAME)} - AI coding assistant with read, bash, edit, write, ipython tools
+ 
+ ${chalk.bold("Usage:")}
+   ${APP_NAME} [options] [@files...] [messages...]
+diff --git a/packages/coding-agent/src/core/agent-session.ts b/packages/coding-agent/src/core/agent-session.ts
+index 1a1228d00..fce2c74a4 100644
+--- a/packages/coding-agent/src/core/agent-session.ts
++++ b/packages/coding-agent/src/core/agent-session.ts
+@@ -13,16 +13,18 @@
+  * Modes use this class and add their own I/O layer on top.
+  */
+ 
+-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+-import { basename, dirname } from "node:path";
+-import type {
++import { randomUUID } from "node:crypto";
++import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { basename, dirname, join } from "node:path";
++import {
+ 	Agent,
+-	AgentEvent,
+-	AgentMessage,
+-	AgentState,
+-	AgentTool,
+-	PrepareNextTurnContext,
+-	ThinkingLevel,
++	type AgentEvent,
++	type AgentMessage,
++	type AgentState,
++	type AgentTool,
++	type PrepareNextTurnContext,
++	type ThinkingLevel,
+ } from "@earendil-works/pi-agent-core";
+ import { contentText } from "@earendil-works/pi-ai";
+ import type {
+@@ -94,13 +96,20 @@ import {
+ 	wrapRegisteredTools,
+ } from "./extensions/index.ts";
+ import { emitSessionShutdownEvent } from "./extensions/runner.ts";
++import type { KernelManager } from "./kernel/index.ts";
+ import type { BashExecutionMessage, CustomMessage } from "./messages.ts";
+ import { ModelRegistry } from "./model-registry.ts";
+ import type { ModelRuntime } from "./model-runtime.ts";
+ import { expandPromptTemplate, type PromptTemplate } from "./prompt-templates.ts";
+ import type { ResourceExtensionPaths, ResourceLoader } from "./resource-loader.ts";
+-import type { BranchSummaryEntry, CompactionEntry, SessionEntry, SessionManager } from "./session-manager.ts";
+-import { CURRENT_SESSION_VERSION, getLatestCompactionEntry, type SessionHeader } from "./session-manager.ts";
++import type { RlmRunResult, RlmUsage } from "./rlm-runtime.ts";
++import type { BranchSummaryEntry, CompactionEntry, SessionEntry } from "./session-manager.ts";
++import {
++	CURRENT_SESSION_VERSION,
++	getLatestCompactionEntry,
++	type SessionHeader,
++	SessionManager,
++} from "./session-manager.ts";
+ import type { SettingsManager } from "./settings-manager.ts";
+ import type { SlashCommandInfo } from "./slash-commands.ts";
+ import { createSyntheticSourceInfo, type SourceInfo } from "./source-info.ts";
+@@ -208,7 +217,7 @@ export interface AgentSessionConfig {
+ 	customTools?: ToolDefinition[];
+ 	/** Canonical model/auth runtime used by coding-agent internals. */
+ 	modelRuntime: ModelRuntime;
+-	/** Initial active built-in tool names. Default: [read, bash, edit, write] */
++	/** Initial active built-in tool names. Default: [read, bash, edit, write, ipython] */
+ 	initialActiveToolNames?: string[];
+ 	/** Optional allowlist of tool names. When provided, only these tool names are exposed. */
+ 	allowedToolNames?: string[];
+@@ -225,6 +234,12 @@ export interface AgentSessionConfig {
+ 	extensionRunnerRef?: { current?: ExtensionRunner };
+ 	/** Session start event metadata emitted when extensions bind to this runtime. */
+ 	sessionStartEvent?: SessionStartEvent;
++	/** Current recursive language model depth. Root sessions default to RLM_DEPTH or 0. */
++	rlmDepth?: number;
++	/** Maximum recursive depth. Defaults to RLM_MAX_DEPTH or 1. */
++	rlmMaxDepth?: number;
++	/** Directory for child-session artifacts. */
++	rlmSessionDir?: string;
+ }
+ 
+ export interface ExtensionBindings {
+@@ -298,6 +313,17 @@ function estimateMessagesTokens(messages: AgentMessage[]): number {
+ /** Standard thinking levels */
+ const THINKING_LEVELS: ThinkingLevel[] = ["off", "minimal", "low", "medium", "high"];
+ 
++function parseRlmDepth(value: string | undefined, fallback: number, name: string): number {
++	if (value === undefined || value === "") return fallback;
++	const parsed = Number.parseInt(value, 10);
++	if (!Number.isFinite(parsed) || parsed < 0) throw new Error(`${name} must be a non-negative integer`);
++	return parsed;
++}
++
++function emptyRlmUsage(): RlmUsage {
++	return { prompt_tokens: 0, completion_tokens: 0 };
++}
++
+ // ============================================================================
+ // AgentSession Class
+ // ============================================================================
+@@ -360,6 +386,10 @@ export class AgentSession {
+ 	private _extensionShutdownHandler?: ShutdownHandler;
+ 	private _extensionErrorListener?: ExtensionErrorListener;
+ 	private _extensionErrorUnsubscriber?: () => void;
++	private _ipythonKernelManagerRef: { current?: KernelManager } = {};
++	private _rlmDepth: number;
++	private _rlmMaxDepth: number;
++	private _rlmSessionDir?: string;
+ 
+ 	private _modelRuntime: ModelRuntime;
+ 
+@@ -389,6 +419,9 @@ export class AgentSession {
+ 		this._excludedToolNames = config.excludedToolNames ? new Set(config.excludedToolNames) : undefined;
+ 		this._baseToolsOverride = config.baseToolsOverride;
+ 		this._sessionStartEvent = config.sessionStartEvent ?? { type: "session_start", reason: "startup" };
++		this._rlmDepth = config.rlmDepth ?? parseRlmDepth(process.env.RLM_DEPTH, 0, "RLM_DEPTH");
++		this._rlmMaxDepth = config.rlmMaxDepth ?? parseRlmDepth(process.env.RLM_MAX_DEPTH, 1, "RLM_MAX_DEPTH");
++		this._rlmSessionDir = config.rlmSessionDir;
+ 
+ 		// Always subscribe to agent events for internal handling
+ 		// (session persistence, extensions, auto-compaction, retry logic)
+@@ -2571,6 +2604,12 @@ export class AgentSession {
+ 			: createAllToolDefinitions(this._cwd, {
+ 					read: { autoResizeImages },
+ 					bash: { commandPrefix: shellCommandPrefix, shellPath },
++					ipython: {
++						kernelManagerRef: this._ipythonKernelManagerRef,
++						env: this._rlmKernelEnv(),
++						sessionId: this.sessionId,
++						rlmRunHandler: ({ prompt, kwargs }) => this.runRlmChild(prompt, kwargs),
++					},
+ 				});
+ 
+ 		this._baseToolDefinitions = new Map(
+@@ -2599,7 +2638,7 @@ export class AgentSession {
+ 
+ 		const defaultActiveToolNames = this._baseToolsOverride
+ 			? Object.keys(this._baseToolsOverride)
+-			: ["read", "bash", "edit", "write"];
++			: ["read", "bash", "edit", "write", "ipython"];
+ 		const baseActiveToolNames = options.activeToolNames ?? defaultActiveToolNames;
+ 		this._refreshToolRegistry({
+ 			activeToolNames: baseActiveToolNames,
+@@ -2634,6 +2673,139 @@ export class AgentSession {
+ 		}
+ 	}
+ 
++	private _rlmKernelEnv(): Record<string, string> {
++		return {
++			RLM_DEPTH: String(this._rlmDepth),
++			RLM_MAX_DEPTH: String(this._rlmMaxDepth),
++			RLM_SESSION_DIR: this._ensureRlmSessionDir(),
++		};
++	}
++
++	private _ensureRlmSessionDir(): string {
++		if (this._rlmSessionDir) {
++			mkdirSync(this._rlmSessionDir, { recursive: true });
++			return this._rlmSessionDir;
++		}
++		const sessionFile = this.sessionManager.getSessionFile();
++		if (sessionFile) {
++			this._rlmSessionDir = `${sessionFile}.rlm`;
++			mkdirSync(this._rlmSessionDir, { recursive: true });
++			return this._rlmSessionDir;
++		}
++		this._rlmSessionDir = mkdtempSync(join(tmpdir(), "pi-rlm-"));
++		return this._rlmSessionDir;
++	}
++
++	private _createChildRlmSessionDir(): string {
++		const parentDir = this._ensureRlmSessionDir();
++		for (let attempt = 0; attempt < 100; attempt++) {
++			const childDir = join(parentDir, `sub-${randomUUID().slice(0, 8)}`);
++			try {
++				mkdirSync(childDir);
++				return childDir;
++			} catch (error) {
++				if (error instanceof Error && "code" in error && error.code === "EEXIST") continue;
++				throw error;
++			}
++		}
++		throw new Error("Unable to create unique RLM child session directory");
++	}
++
++	private _usageForCurrentMessages(): RlmUsage {
++		const usage = emptyRlmUsage();
++		for (const message of this.agent.state.messages) {
++			if (message.role !== "assistant") continue;
++			const assistantUsage = (message as AssistantMessage).usage;
++			usage.prompt_tokens += assistantUsage.input + assistantUsage.cacheRead + assistantUsage.cacheWrite;
++			usage.completion_tokens += assistantUsage.output;
++		}
++		return usage;
++	}
++
++	async runRlmChild(prompt: string, kwargs: Record<string, unknown> = {}): Promise<RlmRunResult> {
++		if (this._rlmDepth >= this._rlmMaxDepth) {
++			throw new Error(
++				`RLM recursion depth limit reached (RLM_DEPTH=${this._rlmDepth}, RLM_MAX_DEPTH=${this._rlmMaxDepth})`,
++			);
++		}
++
++		const requestedModel = kwargs.model;
++		const requestedThinking = kwargs.thinking;
++		const unsupportedKwargs = Object.keys(kwargs).filter((key) => key !== "model" && key !== "thinking");
++		if (unsupportedKwargs.length > 0) {
++			throw new Error(`Unsupported rlm.run kwargs: ${unsupportedKwargs.sort().join(", ")}`);
++		}
++		if (requestedModel !== undefined && typeof requestedModel !== "string") {
++			throw new Error("rlm.run model must be a provider/model string");
++		}
++		if (requestedThinking !== undefined && !THINKING_LEVELS.includes(requestedThinking as ThinkingLevel)) {
++			throw new Error(`rlm.run thinking must be one of: ${THINKING_LEVELS.join(", ")}`);
++		}
++
++		let model = this.model;
++		if (requestedModel) {
++			const slash = requestedModel.indexOf("/");
++			if (slash <= 0 || slash === requestedModel.length - 1) {
++				throw new Error("rlm.run model must use provider/model format");
++			}
++			model = this._modelRuntime.getModel(requestedModel.slice(0, slash), requestedModel.slice(slash + 1));
++			if (!model) throw new Error(`Unknown RLM model: ${requestedModel}`);
++		}
++		if (!model) throw new Error(formatNoModelSelectedMessage());
++
++		const thinkingLevel = (requestedThinking as ThinkingLevel | undefined) ?? this.thinkingLevel;
++		const childSessionDir = this._createChildRlmSessionDir();
++		const childSessionManager = SessionManager.create(this._cwd, childSessionDir);
++		childSessionManager.appendModelChange(model.provider, model.id);
++		childSessionManager.appendThinkingLevelChange(thinkingLevel);
++
++		const childAgent = new Agent({
++			initialState: { systemPrompt: "", model, thinkingLevel, tools: [] },
++			convertToLlm: this.agent.convertToLlm,
++			transformContext: this.agent.transformContext,
++			streamFn: this.agent.streamFunction,
++			getApiKey: this.agent.getApiKey,
++			onPayload: this.agent.onPayload,
++			onResponse: this.agent.onResponse,
++			steeringMode: this.settingsManager.getSteeringMode(),
++			followUpMode: this.settingsManager.getFollowUpMode(),
++			sessionId: childSessionManager.getSessionId(),
++			thinkingBudgets: this.settingsManager.getThinkingBudgets(),
++			transport: this.settingsManager.getTransport(),
++			maxRetryDelayMs: this.settingsManager.getProviderRetrySettings().maxRetryDelayMs,
++			toolExecution: this.agent.toolExecution,
++		});
++		const child = new AgentSession({
++			agent: childAgent,
++			sessionManager: childSessionManager,
++			settingsManager: this.settingsManager,
++			cwd: this._cwd,
++			scopedModels: this._scopedModels,
++			resourceLoader: this._resourceLoader,
++			customTools: this._customTools,
++			modelRuntime: this._modelRuntime,
++			initialActiveToolNames: this.getActiveToolNames(),
++			allowedToolNames: this._allowedToolNames ? [...this._allowedToolNames] : undefined,
++			excludedToolNames: this._excludedToolNames ? [...this._excludedToolNames] : undefined,
++			rlmDepth: this._rlmDepth + 1,
++			rlmMaxDepth: this._rlmMaxDepth,
++			rlmSessionDir: childSessionDir,
++			sessionStartEvent: { type: "session_start", reason: "startup" },
++		});
++
++		try {
++			await child.prompt(prompt, { expandPromptTemplates: false, source: "extension" });
++			return {
++				answer: child.getLastAssistantText() ?? "",
++				usage: child._usageForCurrentMessages(),
++				turns: child.agent.state.messages.filter((message) => message.role === "assistant").length,
++				session_dir: childSessionDir,
++			};
++		} finally {
++			child.dispose();
++		}
++	}
++
+ 	// =========================================================================
+ 	// Auto-Retry
+ 	// =========================================================================
+diff --git a/packages/coding-agent/src/core/kernel/bootstrap-cli.ts b/packages/coding-agent/src/core/kernel/bootstrap-cli.ts
+new file mode 100644
+index 000000000..94dc605f1
+--- /dev/null
++++ b/packages/coding-agent/src/core/kernel/bootstrap-cli.ts
+@@ -0,0 +1,13 @@
++import { ensureKernelPython } from "./bootstrap.ts";
++
++function errorMessage(error: unknown): string {
++	return error instanceof Error ? error.message : String(error);
++}
++
++try {
++	const python = await ensureKernelPython();
++	console.log(`kernel python: ${python}`);
++} catch (error) {
++	console.error(errorMessage(error));
++	process.exit(1);
++}
+diff --git a/packages/coding-agent/src/core/kernel/bootstrap.ts b/packages/coding-agent/src/core/kernel/bootstrap.ts
+new file mode 100644
+index 000000000..a6cba002d
+--- /dev/null
++++ b/packages/coding-agent/src/core/kernel/bootstrap.ts
+@@ -0,0 +1,357 @@
++import { spawn } from "node:child_process";
++import { constants, existsSync } from "node:fs";
++import { access, cp, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
++import os from "node:os";
++import path from "node:path";
++import { setTimeout as sleep } from "node:timers/promises";
++import { fileURLToPath } from "node:url";
++import { getAgentDir } from "../../config.ts";
++
++const BOOTSTRAP_SCHEMA = 1;
++const PYTHON_VERSION = "3.11";
++const IPYKERNEL_REQUIREMENT = "ipykernel";
++const RUNTIME_REQUIREMENT = "pi-rlm-runtime@1";
++const BOOTSTRAP_VERSION_FILE = ".bootstrap-version";
++const BOOTSTRAP_LOCK_NAME = ".bootstrap.lock";
++const BOOTSTRAP_LOCK_RETRY_MS = 100;
++const BOOTSTRAP_LOCK_STALE_WITHOUT_PID_MS = 30_000;
++
++let inFlightEnsureKernelPython: { key: string; promise: Promise<string> } | null = null;
++
++interface BootstrapVersion {
++	schema: number;
++	ipykernel?: string;
++	runtime?: string;
++}
++
++function errorMessage(error: unknown): string {
++	return error instanceof Error ? error.message : String(error);
++}
++
++function isNodeError(error: unknown, code: string): boolean {
++	return error instanceof Error && "code" in error && error.code === code;
++}
++
++function isRecord(value: unknown): value is Record<string, unknown> {
++	return typeof value === "object" && value !== null && !Array.isArray(value);
++}
++
++async function exists(filePath: string): Promise<boolean> {
++	try {
++		await access(filePath);
++		return true;
++	} catch {
++		return false;
++	}
++}
++
++async function isExecutable(filePath: string): Promise<boolean> {
++	try {
++		await access(filePath, constants.X_OK);
++		return true;
++	} catch {
++		return false;
++	}
++}
++
++function expandHome(filePath: string): string {
++	if (filePath === "~") return os.homedir();
++	if (filePath.startsWith("~/")) return path.join(os.homedir(), filePath.slice(2));
++	return filePath;
++}
++
++function ensureKernelPythonKey(): string {
++	return [
++		process.env.PI_RLM_KERNEL_PYTHON ?? "",
++		process.env.PI_RLM_KERNEL_VENV ?? "",
++		process.env.HOME ?? "",
++		process.env.XDG_DATA_HOME ?? "",
++	].join("\0");
++}
++
++export function getKernelVenvDir(): string {
++	const override = process.env.PI_RLM_KERNEL_VENV;
++	if (override) return path.resolve(expandHome(override));
++	return path.join(getAgentDir(), "kernel-venv");
++}
++
++function getXdgKernelVenvDir(): string {
++	const dataHome = process.env.XDG_DATA_HOME
++		? path.resolve(expandHome(process.env.XDG_DATA_HOME))
++		: path.join(os.homedir(), ".local", "share");
++	return path.join(dataHome, "pi", "agent", "kernel-venv");
++}
++
++async function resolveWritableKernelVenvDir(): Promise<string> {
++	const primary = getKernelVenvDir();
++	try {
++		await mkdir(path.dirname(primary), { recursive: true });
++		return primary;
++	} catch (primaryError) {
++		if (process.env.PI_RLM_KERNEL_VENV) {
++			throw new Error(`couldn't create kernel venv parent directory for ${primary}: ${errorMessage(primaryError)}`);
++		}
++
++		const fallback = getXdgKernelVenvDir();
++		try {
++			await mkdir(path.dirname(fallback), { recursive: true });
++			return fallback;
++		} catch (fallbackError) {
++			throw new Error(
++				`couldn't create kernel venv directory at ${primary} or ${fallback}; set PI_RLM_KERNEL_PYTHON to a python with ipykernel installed. ${errorMessage(fallbackError)}`,
++			);
++		}
++	}
++}
++
++function run(command: string, args: string[], options: { stdio?: "ignore" | "inherit" } = {}): Promise<void> {
++	return new Promise((resolve, reject) => {
++		const child = spawn(command, args, {
++			env: process.env,
++			stdio: options.stdio ?? "ignore",
++		});
++		child.on("error", reject);
++		child.on("exit", (code, signal) => {
++			if (code === 0) {
++				resolve();
++				return;
++			}
++			const reason = signal ? `signal ${signal}` : `exit code ${code}`;
++			reject(new Error(`${command} ${args.join(" ")} failed with ${reason}`));
++		});
++	});
++}
++
++async function pythonImports(python: string, moduleName: string): Promise<boolean> {
++	try {
++		await run(python, ["-c", `import ${moduleName}`], { stdio: "ignore" });
++		return true;
++	} catch {
++		return false;
++	}
++}
++
++async function hasIpykernel(python: string): Promise<boolean> {
++	return pythonImports(python, "ipykernel");
++}
++
++async function hasPiRlmRuntime(python: string): Promise<boolean> {
++	return pythonImports(python, "rlm");
++}
++
++function bootstrapLockDir(venv: string): string {
++	return path.join(path.dirname(venv), `${path.basename(venv)}${BOOTSTRAP_LOCK_NAME}`);
++}
++
++function processIsRunning(pid: number): boolean {
++	try {
++		process.kill(pid, 0);
++		return true;
++	} catch (error) {
++		return isNodeError(error, "EPERM");
++	}
++}
++
++async function readLockPid(lockDir: string): Promise<number | null> {
++	try {
++		const raw = await readFile(path.join(lockDir, "pid"), "utf8");
++		const pid = Number.parseInt(raw.trim(), 10);
++		return Number.isInteger(pid) && pid > 0 ? pid : null;
++	} catch {
++		return null;
++	}
++}
++
++async function lockMissingPidIsStale(lockDir: string): Promise<boolean> {
++	try {
++		const lockStat = await stat(lockDir);
++		return Date.now() - lockStat.mtimeMs > BOOTSTRAP_LOCK_STALE_WITHOUT_PID_MS;
++	} catch {
++		return false;
++	}
++}
++
++async function acquireBootstrapLock(venv: string): Promise<() => Promise<void>> {
++	const lockDir = bootstrapLockDir(venv);
++	await mkdir(path.dirname(lockDir), { recursive: true });
++
++	for (;;) {
++		try {
++			await mkdir(lockDir);
++			await writeFile(path.join(lockDir, "pid"), `${process.pid}\n`, "utf8");
++			return () => rm(lockDir, { recursive: true, force: true });
++		} catch (error) {
++			if (!isNodeError(error, "EEXIST")) throw error;
++
++			const pid = await readLockPid(lockDir);
++			if (pid === null ? await lockMissingPidIsStale(lockDir) : !processIsRunning(pid)) {
++				await rm(lockDir, { recursive: true, force: true });
++				continue;
++			}
++
++			await sleep(BOOTSTRAP_LOCK_RETRY_MS);
++		}
++	}
++}
++
++async function findExecutable(name: string): Promise<string | null> {
++	const pathValue = process.env.PATH;
++	if (!pathValue) return null;
++	const candidates = process.platform === "win32" ? [name, `${name}.exe`] : [name];
++	for (const dir of pathValue.split(path.delimiter)) {
++		if (!dir) continue;
++		for (const candidate of candidates) {
++			const fullPath = path.join(dir, candidate);
++			if (await isExecutable(fullPath)) return fullPath;
++		}
++	}
++	return null;
++}
++
++async function ensureUv(): Promise<string> {
++	const fromPath = await findExecutable("uv");
++	if (fromPath) return fromPath;
++
++	const localUv = path.join(os.homedir(), ".local", "bin", process.platform === "win32" ? "uv.exe" : "uv");
++	if (await isExecutable(localUv)) return localUv;
++
++	process.stderr.write("› installing uv (one-time)…\n");
++	try {
++		await run("sh", ["-c", "curl -LsSf https://astral.sh/uv/install.sh | sh"], { stdio: "inherit" });
++	} catch (error) {
++		throw new Error(
++			`couldn't install uv from astral.sh; install it yourself: curl -LsSf https://astral.sh/uv/install.sh | sh, then re-run pi. ${errorMessage(error)}`,
++		);
++	}
++
++	if (await isExecutable(localUv)) return localUv;
++	const installedFromPath = await findExecutable("uv");
++	if (installedFromPath) return installedFromPath;
++	throw new Error("uv install completed but binary not found at ~/.local/bin/uv");
++}
++
++async function readBootstrapVersion(venv: string): Promise<BootstrapVersion | null> {
++	try {
++		const raw = await readFile(path.join(venv, BOOTSTRAP_VERSION_FILE), "utf8");
++		const parsed: unknown = JSON.parse(raw);
++		if (!isRecord(parsed) || typeof parsed.schema !== "number") return null;
++		return {
++			schema: parsed.schema,
++			ipykernel: typeof parsed.ipykernel === "string" ? parsed.ipykernel : undefined,
++			runtime: typeof parsed.runtime === "string" ? parsed.runtime : undefined,
++		};
++	} catch {
++		return null;
++	}
++}
++
++function bootstrapVersionCurrent(version: BootstrapVersion | null): boolean {
++	return (
++		version?.schema === BOOTSTRAP_SCHEMA &&
++		version.ipykernel === IPYKERNEL_REQUIREMENT &&
++		version.runtime === RUNTIME_REQUIREMENT
++	);
++}
++
++async function writeBootstrapVersion(venv: string): Promise<void> {
++	const version: BootstrapVersion = {
++		schema: BOOTSTRAP_SCHEMA,
++		ipykernel: IPYKERNEL_REQUIREMENT,
++		runtime: RUNTIME_REQUIREMENT,
++	};
++	await writeFile(path.join(venv, BOOTSTRAP_VERSION_FILE), `${JSON.stringify(version)}\n`, "utf8");
++}
++
++function runtimeCandidateDirs(): string[] {
++	const moduleDir = path.dirname(fileURLToPath(import.meta.url));
++	return [path.resolve(moduleDir, "..", "..", "runtime"), path.resolve(moduleDir, "..", "..", "..", "runtime")];
++}
++
++async function resolveRuntimeRequirement(): Promise<string> {
++	for (const candidate of runtimeCandidateDirs()) {
++		if (await exists(path.join(candidate, "pyproject.toml"))) {
++			return candidate;
++		}
++	}
++	throw new Error("bundled pi RLM runtime not found");
++}
++
++async function bootstrapVenv(venv: string): Promise<void> {
++	await mkdir(path.dirname(venv), { recursive: true });
++	const uv = await ensureUv();
++	const python = path.join(venv, "bin", "python");
++	const runtimeRequirement = await resolveRuntimeRequirement();
++	const stagingDir = await mkdtemp(path.join(os.tmpdir(), "pi-rlm-runtime-"));
++	const stagedRuntime = path.join(stagingDir, "runtime");
++
++	try {
++		await cp(runtimeRequirement, stagedRuntime, { recursive: true });
++		await run(uv, ["python", "install", PYTHON_VERSION]);
++		await run(uv, ["venv", venv, "--python", PYTHON_VERSION, "--seed"]);
++		await run(uv, ["pip", "install", "--python", python, IPYKERNEL_REQUIREMENT, stagedRuntime]);
++		await writeBootstrapVersion(venv);
++	} finally {
++		await rm(stagingDir, { recursive: true, force: true });
++	}
++}
++
++async function kernelReady(python: string, venv: string): Promise<boolean> {
++	return (
++		(await hasIpykernel(python)) &&
++		(await hasPiRlmRuntime(python)) &&
++		bootstrapVersionCurrent(await readBootstrapVersion(venv))
++	);
++}
++
++function formatBootstrapFailure(error: unknown): Error {
++	return new Error(
++		`Failed to set up the Python kernel runtime. ${errorMessage(error)}\n` +
++			"First-time setup needs internet to install uv, Python, ipykernel, and pi-rlm-runtime; once set up, pi runs offline. " +
++			"Set PI_RLM_KERNEL_PYTHON to a Python with ipykernel installed to skip auto-bootstrap.",
++	);
++}
++
++async function ensureKernelPythonUncached(): Promise<string> {
++	const override = process.env.PI_RLM_KERNEL_PYTHON;
++	if (override) {
++		const python = path.resolve(expandHome(override));
++		if (await hasIpykernel(python)) return python;
++		throw new Error(`PI_RLM_KERNEL_PYTHON points to a Python that cannot import ipykernel: ${python}`);
++	}
++
++	const venv = await resolveWritableKernelVenvDir();
++	const python = path.join(venv, "bin", "python");
++	if (await kernelReady(python, venv)) return python;
++
++	const releaseLock = await acquireBootstrapLock(venv);
++	try {
++		if (await kernelReady(python, venv)) return python;
++
++		const hadVenv = existsSync(venv);
++		process.stderr.write("› setting up python kernel (one-time, ~30s)…\n");
++		if (hadVenv) {
++			process.stderr.write("rebuilding kernel venv\n");
++			await rm(venv, { recursive: true, force: true });
++		}
++
++		await bootstrapVenv(venv);
++	} catch (error) {
++		throw formatBootstrapFailure(error);
++	} finally {
++		await releaseLock().catch(() => undefined);
++	}
++
++	process.stderr.write("✓ ready\n");
++	return python;
++}
++
++export function ensureKernelPython(): Promise<string> {
++	const key = ensureKernelPythonKey();
++	if (inFlightEnsureKernelPython?.key === key) return inFlightEnsureKernelPython.promise;
++
++	const promise = ensureKernelPythonUncached().finally(() => {
++		if (inFlightEnsureKernelPython?.promise === promise) inFlightEnsureKernelPython = null;
++	});
++	inFlightEnsureKernelPython = { key, promise };
++	return promise;
++}
+diff --git a/packages/coding-agent/src/core/kernel/index.ts b/packages/coding-agent/src/core/kernel/index.ts
+new file mode 100644
+index 000000000..b83d0b71e
+--- /dev/null
++++ b/packages/coding-agent/src/core/kernel/index.ts
+@@ -0,0 +1,761 @@
++// TODO: reconsider persistent kernel vs stateless `python -c` once RLM-1 weights land.
++import { type ChildProcess, spawn } from "node:child_process";
++import { createHmac, randomBytes, randomUUID } from "node:crypto";
++import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++import { setTimeout as sleep } from "node:timers/promises";
++import { registerSessionResourceCleanup } from "@earendil-works/pi-ai";
++import { Dealer, Subscriber } from "zeromq";
++import type { RlmRunHandler, RlmRunResult } from "../rlm-runtime.ts";
++import { ensureKernelPython } from "./bootstrap.ts";
++
++const DELIM = Buffer.from("<IDS|MSG>");
++const PROTOCOL_VERSION = "5.3";
++const PORTS_RESOLVE_TIMEOUT_MS = 5000;
++const READY_TIMEOUT_MS = 5000;
++// Loopback PUB/SUB subscription propagation is usually sub-ms, but keep a small guard before first execute.
++const IOPUB_SUBSCRIBE_DELAY_MS = 50;
++const DEFAULT_MAX_OUTPUT_CHARS = 65536;
++const RLM_DISPOSE_TIMEOUT_MS = 5000;
++
++export interface KernelManagerOptions {
++	/** Python interpreter that has `ipykernel` available. Defaults to the auto-bootstrapped kernel. */
++	python?: string;
++	cwd?: string;
++	env?: Record<string, string>;
++	sessionId?: string;
++	rlmRunHandler?: RlmRunHandler;
++	/** Default: "pi". */
++	username?: string;
++}
++
++export interface ExecuteOptions {
++	/** Aborting interrupts the kernel via the control channel. */
++	signal?: AbortSignal;
++	onStream?: (chunk: string, name: "stdout" | "stderr") => void;
++	/** Cap stdout / stderr / result at this many characters. Default 65536. */
++	maxOutputChars?: number;
++}
++
++export interface ExecuteResult {
++	stdout: string;
++	stderr: string;
++	/** Last `execute_result` payload (text/plain), if the cell produced one. */
++	result?: string;
++	status: "ok" | "error" | "aborted";
++	error?: { ename: string; evalue: string; traceback: string[] };
++	durationMs: number;
++}
++
++interface ConnectionInfo {
++	ip: string;
++	transport: "tcp";
++	shell_port: number;
++	iopub_port: number;
++	stdin_port: number;
++	control_port: number;
++	hb_port: number;
++	signature_scheme: "hmac-sha256";
++	key: string;
++	kernel_name: string;
++}
++
++interface JupyterMessage {
++	header: {
++		msg_id: string;
++		session: string;
++		username: string;
++		date: string;
++		msg_type: string;
++		version: string;
++	};
++	parent_header: Record<string, unknown>;
++	metadata: Record<string, unknown>;
++	content: Record<string, unknown>;
++}
++
++function isRecord(value: unknown): value is Record<string, unknown> {
++	return typeof value === "object" && value !== null && !Array.isArray(value);
++}
++
++function errorMessage(error: unknown): string {
++	return error instanceof Error ? error.message : String(error);
++}
++
++// ---- wire format ---------------------------------------------------------
++
++function buildMessage(
++	msgType: string,
++	content: Record<string, unknown>,
++	session: string,
++	username: string,
++): JupyterMessage {
++	return {
++		header: {
++			msg_id: randomUUID(),
++			session,
++			username,
++			date: new Date().toISOString(),
++			msg_type: msgType,
++			version: PROTOCOL_VERSION,
++		},
++		parent_header: {},
++		metadata: {},
++		content,
++	};
++}
++
++function sign(parts: Buffer[], key: string): Buffer {
++	const hmac = createHmac("sha256", key);
++	for (const p of parts) hmac.update(p);
++	return Buffer.from(hmac.digest("hex"));
++}
++
++function encode(msg: JupyterMessage, key: string): Buffer[] {
++	const parts = [
++		Buffer.from(JSON.stringify(msg.header)),
++		Buffer.from(JSON.stringify(msg.parent_header)),
++		Buffer.from(JSON.stringify(msg.metadata)),
++		Buffer.from(JSON.stringify(msg.content)),
++	];
++	return [DELIM, sign(parts, key), ...parts];
++}
++
++function decode(frames: Buffer[]): JupyterMessage | null {
++	let i = 0;
++	while (i < frames.length && !frames[i].equals(DELIM)) i++;
++	if (i + 5 >= frames.length) return null;
++	try {
++		return {
++			header: JSON.parse(frames[i + 2].toString()),
++			parent_header: JSON.parse(frames[i + 3].toString()),
++			metadata: JSON.parse(frames[i + 4].toString()),
++			content: JSON.parse(frames[i + 5].toString()),
++		};
++	} catch {
++		return null;
++	}
++}
++
++// ---- connection setup ----------------------------------------------------
++
++const CONNECTION_PORT_KEYS = ["shell_port", "iopub_port", "stdin_port", "control_port", "hb_port"] as const;
++
++function hasResolvedPorts(info: ConnectionInfo): boolean {
++	return CONNECTION_PORT_KEYS.every((key) => Number.isInteger(info[key]) && info[key] > 0);
++}
++
++function parseConnectionInfo(value: unknown): ConnectionInfo | null {
++	if (!isRecord(value)) return null;
++	if (value.ip !== "127.0.0.1") return null;
++	if (value.transport !== "tcp") return null;
++	if (value.signature_scheme !== "hmac-sha256") return null;
++	if (typeof value.key !== "string") return null;
++	const shellPort = value.shell_port;
++	const iopubPort = value.iopub_port;
++	const stdinPort = value.stdin_port;
++	const controlPort = value.control_port;
++	const hbPort = value.hb_port;
++	if (typeof shellPort !== "number" || !Number.isInteger(shellPort)) return null;
++	if (typeof iopubPort !== "number" || !Number.isInteger(iopubPort)) return null;
++	if (typeof stdinPort !== "number" || !Number.isInteger(stdinPort)) return null;
++	if (typeof controlPort !== "number" || !Number.isInteger(controlPort)) return null;
++	if (typeof hbPort !== "number" || !Number.isInteger(hbPort)) return null;
++	const kernelName = typeof value.kernel_name === "string" ? value.kernel_name : "python3";
++	return {
++		ip: value.ip,
++		transport: value.transport,
++		shell_port: shellPort,
++		iopub_port: iopubPort,
++		stdin_port: stdinPort,
++		control_port: controlPort,
++		hb_port: hbPort,
++		signature_scheme: value.signature_scheme,
++		key: value.key,
++		kernel_name: kernelName,
++	};
++}
++
++function readConnectionInfo(path: string): ConnectionInfo | null {
++	try {
++		return parseConnectionInfo(JSON.parse(readFileSync(path, "utf8")));
++	} catch {
++		return null;
++	}
++}
++
++function makeConnection(): { info: ConnectionInfo; path: string; tempDir: string } {
++	const info: ConnectionInfo = {
++		ip: "127.0.0.1",
++		transport: "tcp",
++		shell_port: 0,
++		iopub_port: 0,
++		stdin_port: 0,
++		control_port: 0,
++		hb_port: 0,
++		signature_scheme: "hmac-sha256",
++		key: randomBytes(16).toString("hex"),
++		kernel_name: "python3",
++	};
++	const tempDir = mkdtempSync(join(tmpdir(), "pi-rlm-kernel-"));
++	const path = join(tempDir, "connection.json");
++	writeFileSync(path, JSON.stringify(info, null, 2), { mode: 0o600 });
++	return { info, path, tempDir };
++}
++
++// ---- process-wide cleanup -----------------------------------------------
++
++const liveKernels = new Set<KernelManager>();
++let signalHandlersInstalled = false;
++
++registerSessionResourceCleanup((sessionId) => {
++	for (const k of liveKernels) {
++		if (!sessionId || k.ownerSessionId === sessionId) {
++			void k.dispose();
++		}
++	}
++});
++
++function installSignalHandlersOnce(): void {
++	if (signalHandlersInstalled) return;
++	signalHandlersInstalled = true;
++
++	const asyncShutdown = async (): Promise<void> => {
++		await Promise.allSettled([...liveKernels].map((k) => k.shutdown()));
++	};
++
++	// `beforeExit` and signal handlers can await async cleanup. `exit`
++	// can only do sync work (Node won't run pending microtasks past it),
++	// so it falls back to `disposeSync()` which kills the child synchronously.
++	process.on("beforeExit", () => {
++		void asyncShutdown();
++	});
++	process.on("SIGINT", () => {
++		void asyncShutdown().finally(() => process.exit(130));
++	});
++	process.on("SIGTERM", () => {
++		void asyncShutdown().finally(() => process.exit(143));
++	});
++	process.on("exit", () => {
++		for (const k of liveKernels) k.disposeSync();
++	});
++}
++
++// ---- kernel manager ------------------------------------------------------
++
++export class KernelManager {
++	private readonly options: Pick<KernelManagerOptions, "python" | "cwd" | "env" | "sessionId" | "rlmRunHandler"> &
++		Required<Pick<KernelManagerOptions, "username">>;
++	private readonly session = randomUUID();
++	private readonly commTargets = new Map<string, string>();
++	private readonly handledRlmCommIds = new Set<string>();
++	private kernel?: ChildProcess;
++	private shell?: Dealer;
++	private iopub?: Subscriber;
++	private control?: Dealer;
++	private connection?: ConnectionInfo;
++	private tempDir?: string;
++	private kernelStderr = "";
++	/** Serializes execute() calls — Jupyter shell channel is request/reply. */
++	private executionQueue: Promise<unknown> = Promise.resolve();
++	private readonly inFlightRlmRuns = new Set<Promise<void>>();
++	private state: "idle" | "starting" | "running" | "shutdown" = "idle";
++	/** Memoized so concurrent callers all await the same in-flight startup. */
++	private startPromise?: Promise<void>;
++
++	constructor(options: KernelManagerOptions) {
++		this.options = {
++			python: options.python,
++			cwd: options.cwd,
++			env: options.env,
++			sessionId: options.sessionId,
++			rlmRunHandler: options.rlmRunHandler,
++			username: options.username ?? "pi",
++		};
++	}
++
++	get ownerSessionId(): string | undefined {
++		return this.options.sessionId;
++	}
++
++	async start(): Promise<void> {
++		if (!this.startPromise) {
++			this.startPromise = this.doStart();
++		}
++		return this.startPromise;
++	}
++
++	private async doStart(): Promise<void> {
++		if (this.state !== "idle") return;
++		this.state = "starting";
++		installSignalHandlersOnce();
++
++		let python: string;
++		try {
++			python = this.options.python ?? (await ensureKernelPython());
++			this.options.python = python;
++		} catch (error) {
++			this.state = "idle";
++			throw error;
++		}
++
++		const { path: connectionPath, tempDir } = makeConnection();
++		this.tempDir = tempDir;
++
++		const kernel = spawn(python, ["-m", "ipykernel_launcher", "-f", connectionPath], {
++			cwd: this.options.cwd,
++			env: this.options.env ? { ...process.env, ...this.options.env } : process.env,
++			stdio: ["ignore", "pipe", "pipe"],
++		});
++		this.kernel = kernel;
++
++		kernel.stderr?.on("data", (buf: Buffer) => {
++			const s = buf.toString();
++			this.kernelStderr += s;
++			process.stderr.write(`[kernel] ${s}`);
++		});
++
++		kernel.on("error", (err) => {
++			if (this.kernel !== kernel) return;
++			console.error(`[kernel] spawn error: ${err.message}`);
++			this.state = "shutdown";
++			liveKernels.delete(this);
++		});
++
++		kernel.on("exit", (code, signal) => {
++			if (this.kernel !== kernel) return;
++			if (this.state !== "shutdown") {
++				console.error(`[kernel] unexpected exit code=${code} signal=${signal}`);
++			}
++			this.state = "shutdown";
++			liveKernels.delete(this);
++		});
++
++		let conn: ConnectionInfo;
++		try {
++			conn = await this.waitForResolvedConnection(connectionPath);
++			this.connection = conn;
++		} catch (e) {
++			const canRetryStartup = (this.state as string) !== "shutdown";
++			await this.shutdown();
++			if (canRetryStartup) this.state = "idle";
++			throw e;
++		}
++
++		this.shell = new Dealer();
++		this.iopub = new Subscriber();
++		this.control = new Dealer();
++		this.shell.connect(`${conn.transport}://${conn.ip}:${conn.shell_port}`);
++		this.iopub.connect(`${conn.transport}://${conn.ip}:${conn.iopub_port}`);
++		this.control.connect(`${conn.transport}://${conn.ip}:${conn.control_port}`);
++		this.iopub.subscribe("");
++
++		// ZMQ PUB/SUB slow-joiner: give the subscription a brief chance to reach the kernel before first execute.
++		await sleep(IOPUB_SUBSCRIBE_DELAY_MS);
++
++		try {
++			await this.probeReady();
++		} catch (e) {
++			const canRetryStartup = (this.state as string) !== "shutdown";
++			await this.shutdown();
++			if (canRetryStartup) this.state = "idle";
++			throw e;
++		}
++
++		liveKernels.add(this);
++		this.state = "running";
++	}
++
++	private async waitForResolvedConnection(connectionPath: string): Promise<ConnectionInfo> {
++		const startedAt = Date.now();
++		while (Date.now() - startedAt < PORTS_RESOLVE_TIMEOUT_MS) {
++			if ((this.state as string) === "shutdown") {
++				const tail = this.kernelStderr.slice(-1024);
++				throw new Error(`Kernel exited before resolving ports. stderr:\n${tail || "(empty)"}`);
++			}
++
++			const info = readConnectionInfo(connectionPath);
++			if (info && hasResolvedPorts(info)) {
++				return info;
++			}
++
++			await sleep(25);
++		}
++
++		const tail = this.kernelStderr.slice(-1024);
++		throw new Error(
++			`Kernel did not resolve connection ports within ${PORTS_RESOLVE_TIMEOUT_MS}ms. stderr tail:\n${tail || "(empty)"}`,
++		);
++	}
++
++	private async probeReady(): Promise<void> {
++		const conn = this.connection!;
++		const shell = this.shell!;
++
++		const msg = buildMessage("kernel_info_request", {}, this.session, this.options.username);
++		const requestMsgId = msg.header.msg_id;
++		await shell.send(encode(msg, conn.key));
++
++		const startedAt = Date.now();
++		while (Date.now() - startedAt < READY_TIMEOUT_MS) {
++			if ((this.state as string) === "shutdown") {
++				const tail = this.kernelStderr.slice(-1024);
++				throw new Error(`Kernel exited during startup. stderr:\n${tail || "(empty)"}`);
++			}
++
++			const remaining = READY_TIMEOUT_MS - (Date.now() - startedAt);
++			const winner = await Promise.race([
++				shell.receive().then((frames) => ({ kind: "frames" as const, frames })),
++				sleep(remaining).then(() => ({ kind: "timeout" as const })),
++			]);
++			if (winner.kind === "timeout") break;
++
++			const incoming = decode(winner.frames);
++			if (
++				incoming?.header.msg_type === "kernel_info_reply" &&
++				(incoming.parent_header as { msg_id?: string }).msg_id === requestMsgId
++			) {
++				return;
++			}
++		}
++		const tail = this.kernelStderr.slice(-1024);
++		throw new Error(
++			`Kernel did not respond to kernel_info_request within ${READY_TIMEOUT_MS}ms. stderr tail:\n${tail || "(empty)"}`,
++		);
++	}
++
++	async execute(code: string, opts: ExecuteOptions = {}): Promise<ExecuteResult> {
++		if (opts.signal?.aborted) {
++			return { stdout: "", stderr: "", status: "aborted", durationMs: 0 };
++		}
++		await this.start();
++		if ((this.state as string) === "shutdown") {
++			throw new Error("Kernel has been shut down");
++		}
++
++		const prev = this.executionQueue;
++		let resolveNext: () => void = () => {};
++		this.executionQueue = new Promise<void>((r) => {
++			resolveNext = r;
++		});
++		await prev;
++
++		const started = Date.now();
++		try {
++			if (opts.signal?.aborted) {
++				return { stdout: "", stderr: "", status: "aborted", durationMs: Date.now() - started };
++			}
++			if ((this.state as string) === "shutdown") {
++				throw new Error("Kernel has been shut down");
++			}
++			return await this.executeInner(code, opts, started);
++		} finally {
++			resolveNext();
++		}
++	}
++
++	private async executeInner(code: string, opts: ExecuteOptions, started: number): Promise<ExecuteResult> {
++		const conn = this.connection!;
++		const shell = this.shell!;
++		const iopub = this.iopub!;
++		const maxChars = opts.maxOutputChars ?? DEFAULT_MAX_OUTPUT_CHARS;
++
++		const msg = buildMessage(
++			"execute_request",
++			{
++				code,
++				silent: false,
++				store_history: true,
++				user_expressions: {},
++				allow_stdin: false,
++				stop_on_error: true,
++			},
++			this.session,
++			this.options.username,
++		);
++		const requestMsgId = msg.header.msg_id;
++
++		if (opts.signal?.aborted) {
++			return { stdout: "", stderr: "", status: "aborted", durationMs: Date.now() - started };
++		}
++		await shell.send(encode(msg, conn.key));
++
++		let stdout = "";
++		let stderr = "";
++		let stdoutTruncated = false;
++		let stderrTruncated = false;
++		let result: string | undefined;
++		let error: ExecuteResult["error"];
++		let status: ExecuteResult["status"] = "ok";
++
++		const onAbort = () => {
++			this.interrupt().catch(() => {});
++		};
++		opts.signal?.addEventListener("abort", onAbort);
++
++		try {
++			for await (const frames of iopub) {
++				const incoming = decode(frames);
++				if (!incoming) continue;
++				const t = incoming.header.msg_type;
++				if (t === "comm_open" || t === "comm_msg" || t === "comm_close") {
++					this.handleCommMessage(incoming);
++					continue;
++				}
++				if ((incoming.parent_header as { msg_id?: string }).msg_id !== requestMsgId) continue;
++
++				if (t === "stream") {
++					const c = incoming.content as { name: "stdout" | "stderr"; text: string };
++					if (c.name === "stdout") {
++						if (stdout.length < maxChars) {
++							stdout += c.text;
++							if (stdout.length > maxChars) {
++								stdout = stdout.slice(0, maxChars);
++								stdoutTruncated = true;
++							}
++						}
++					} else {
++						if (stderr.length < maxChars) {
++							stderr += c.text;
++							if (stderr.length > maxChars) {
++								stderr = stderr.slice(0, maxChars);
++								stderrTruncated = true;
++							}
++						}
++					}
++					opts.onStream?.(c.text, c.name);
++				} else if (t === "execute_result") {
++					const c = incoming.content as { data: Record<string, string> };
++					if (c.data["text/plain"]) result = c.data["text/plain"];
++				} else if (t === "error") {
++					const c = incoming.content as { ename: string; evalue: string; traceback: string[] };
++					error = c;
++					status = "error";
++				} else if (t === "status") {
++					const c = incoming.content as { execution_state: string };
++					if (c.execution_state === "idle") break;
++				}
++			}
++		} finally {
++			opts.signal?.removeEventListener("abort", onAbort);
++		}
++
++		if (stdoutTruncated) stdout += `\n[... output truncated at ${maxChars} chars ...]`;
++		if (stderrTruncated) stderr += `\n[... output truncated at ${maxChars} chars ...]`;
++		if (result !== undefined && result.length > maxChars) {
++			result = `${result.slice(0, maxChars)}\n[... output truncated at ${maxChars} chars ...]`;
++		}
++
++		if (opts.signal?.aborted) status = "aborted";
++
++		return { stdout, stderr, result, error, status, durationMs: Date.now() - started };
++	}
++
++	private handleCommMessage(incoming: JupyterMessage): void {
++		const msgType = incoming.header.msg_type;
++		const content = incoming.content;
++		const commId = content.comm_id;
++		if (typeof commId !== "string") {
++			return;
++		}
++
++		if (msgType === "comm_close") {
++			this.commTargets.delete(commId);
++			this.handledRlmCommIds.delete(commId);
++			return;
++		}
++
++		if (msgType === "comm_open") {
++			const targetName = content.target_name;
++			if (typeof targetName !== "string") {
++				return;
++			}
++			this.commTargets.set(commId, targetName);
++			if (targetName === "rlm.run") {
++				this.startRlmRunFromComm(commId, content.data);
++			}
++			return;
++		}
++
++		const targetName = this.commTargets.get(commId);
++		if (msgType === "comm_msg" && targetName === "rlm.run") {
++			this.startRlmRunFromComm(commId, content.data);
++		}
++	}
++
++	private startRlmRunFromComm(commId: string, data: unknown): void {
++		if (this.handledRlmCommIds.has(commId)) {
++			return;
++		}
++		this.handledRlmCommIds.add(commId);
++
++		const task = (async () => {
++			try {
++				const result = await this.handleRlmRunRequest(data);
++				try {
++					await this.sendCommMessage(commId, { status: "ok", ...result });
++				} catch (replyError) {
++					console.error(
++						`[kernel] failed to send rlm.run ok reply for comm ${commId}: ${errorMessage(replyError)}`,
++					);
++				}
++			} catch (error) {
++				console.error(`[kernel] rlm.run failed for comm ${commId}: ${errorMessage(error)}`);
++				try {
++					await this.sendCommMessage(commId, { status: "error", error: errorMessage(error) });
++				} catch (replyError) {
++					console.error(
++						`[kernel] failed to send rlm.run error reply for comm ${commId}: ${errorMessage(replyError)}`,
++					);
++				}
++			}
++		})();
++		this.inFlightRlmRuns.add(task);
++		void task.finally(() => {
++			this.inFlightRlmRuns.delete(task);
++		});
++	}
++
++	private async handleRlmRunRequest(data: unknown): Promise<RlmRunResult> {
++		const handler = this.options.rlmRunHandler;
++		if (!handler) {
++			throw new Error("rlm.run is not available in this session");
++		}
++		if (!isRecord(data)) {
++			throw new Error("rlm.run comm payload must be an object");
++		}
++		if (data.type !== "run") {
++			throw new Error("rlm.run comm payload must have type 'run'");
++		}
++		if (typeof data.prompt !== "string") {
++			throw new Error("rlm.run prompt must be a string");
++		}
++		const kwargs = isRecord(data.kwargs) ? data.kwargs : {};
++		return handler({ prompt: data.prompt, kwargs });
++	}
++
++	private async sendCommMessage(commId: string, data: Record<string, unknown>): Promise<void> {
++		const channel = this.control ?? this.shell;
++		if (!channel || !this.connection) {
++			throw new Error("Kernel channel is not connected");
++		}
++		const msg = buildMessage("comm_msg", { comm_id: commId, data }, this.session, this.options.username);
++		await channel.send(encode(msg, this.connection.key));
++	}
++
++	private async interrupt(): Promise<void> {
++		if (!this.control || !this.connection) return;
++		const msg = buildMessage("interrupt_request", {}, this.session, this.options.username);
++		await this.control.send(encode(msg, this.connection.key));
++	}
++
++	private cleanupResources(): void {
++		this.shell?.close();
++		this.iopub?.close();
++		this.control?.close();
++		this.shell = undefined;
++		this.iopub = undefined;
++		this.control = undefined;
++		try {
++			this.kernel?.kill("SIGTERM");
++		} catch {}
++		this.kernel = undefined;
++		this.connection = undefined;
++		if (this.tempDir) {
++			try {
++				rmSync(this.tempDir, { recursive: true, force: true });
++			} catch {}
++		}
++		this.tempDir = undefined;
++		this.startPromise = undefined;
++	}
++
++	private async waitForRlmRunsToSettle(tasks: Promise<void>[], timeoutMs: number): Promise<void> {
++		let timeout: ReturnType<typeof globalThis.setTimeout> | undefined;
++		const timeoutPromise = new Promise<"timeout">((resolve) => {
++			timeout = globalThis.setTimeout(() => resolve("timeout"), timeoutMs);
++			if (timeout && typeof timeout === "object" && "unref" in timeout) {
++				timeout.unref();
++			}
++		});
++
++		const result = await Promise.race([Promise.allSettled(tasks).then(() => "settled" as const), timeoutPromise]);
++		if (timeout) {
++			globalThis.clearTimeout(timeout);
++		}
++		if (result === "timeout") {
++			console.error(`[kernel] timed out waiting ${timeoutMs}ms for ${tasks.length} rlm.run task(s) during dispose`);
++		}
++	}
++
++	async shutdown(): Promise<void> {
++		if (this.state === "shutdown") {
++			liveKernels.delete(this);
++			this.cleanupResources();
++			return;
++		}
++		this.state = "shutdown";
++		liveKernels.delete(this);
++
++		try {
++			if (this.control && this.connection) {
++				const msg = buildMessage("shutdown_request", { restart: false }, this.session, this.options.username);
++				await this.control.send(encode(msg, this.connection.key));
++				await sleep(200);
++			}
++		} catch {}
++
++		this.cleanupResources();
++	}
++
++	async restart(): Promise<void> {
++		const prev = this.executionQueue;
++		let resolveNext: () => void = () => {};
++		this.executionQueue = new Promise<void>((r) => {
++			resolveNext = r;
++		});
++		await prev;
++
++		try {
++			await this.shutdown();
++			this.state = "idle";
++			this.kernelStderr = "";
++			await this.start();
++		} finally {
++			resolveNext();
++		}
++	}
++
++	/** Graceful cleanup. Waits briefly for in-flight rlm.run handlers before closing sockets. */
++	dispose(): Promise<void> {
++		this.state = "shutdown";
++		liveKernels.delete(this);
++		const inFlightRlmRuns = [...this.inFlightRlmRuns];
++		if (inFlightRlmRuns.length === 0) {
++			this.cleanupResources();
++			return Promise.resolve();
++		}
++
++		return (async () => {
++			// TODO: plumb AbortSignal through AgentSession.prompt so disposal can cancel long-running child loops.
++			try {
++				await this.waitForRlmRunsToSettle(inFlightRlmRuns, RLM_DISPOSE_TIMEOUT_MS);
++			} finally {
++				this.cleanupResources();
++			}
++		})();
++	}
++
++	/** Synchronous best-effort cleanup. Safe to call from `process.on('exit')`. */
++	disposeSync(): void {
++		this.state = "shutdown";
++		liveKernels.delete(this);
++		// TODO: replace this best-effort hard-exit path if Node exposes an awaitable process-exit cleanup hook.
++		this.cleanupResources();
++	}
++
++	get isRunning(): boolean {
++		return this.state === "running";
++	}
++}
+diff --git a/packages/coding-agent/src/core/rlm-runtime.ts b/packages/coding-agent/src/core/rlm-runtime.ts
+new file mode 100644
+index 000000000..10a00d9d8
+--- /dev/null
++++ b/packages/coding-agent/src/core/rlm-runtime.ts
+@@ -0,0 +1,18 @@
++export interface RlmUsage {
++	prompt_tokens: number;
++	completion_tokens: number;
++}
++
++export interface RlmRunRequest {
++	prompt: string;
++	kwargs: Record<string, unknown>;
++}
++
++export interface RlmRunResult {
++	answer: string;
++	usage: RlmUsage;
++	turns: number;
++	session_dir: string | null;
++}
++
++export type RlmRunHandler = (request: RlmRunRequest) => Promise<RlmRunResult>;
+diff --git a/packages/coding-agent/src/core/sdk.ts b/packages/coding-agent/src/core/sdk.ts
+index a9a266418..bf3beaa43 100644
+--- a/packages/coding-agent/src/core/sdk.ts
++++ b/packages/coding-agent/src/core/sdk.ts
+@@ -55,7 +55,7 @@ export interface CreateAgentSessionOptions {
+ 	 * Optional default tool suppression mode when no explicit allowlist is provided.
+ 	 *
+ 	 * - "all": start with no tools enabled
+-	 * - "builtin": disable the default built-in tools (read, bash, edit, write)
++	 * - "builtin": disable the default built-in tools (read, bash, edit, write, ipython)
+ 	 *   but keep extension/custom tools enabled
+ 	 */
+ 	noTools?: "all" | "builtin";
+@@ -64,7 +64,7 @@ export interface CreateAgentSessionOptions {
+ 	 *
+ 	 * When omitted, pi uses the `defaultTools` setting for the initial built-in
+ 	 * selection when configured. Otherwise it enables the default built-in tools
+-	 * (read, bash, edit, write). Extension/custom tools remain enabled unless
++	 * (read, bash, edit, write, ipython). Extension/custom tools remain enabled unless
+ 	 * `noTools` changes that default. When provided, only the listed tool names are
+ 	 * enabled.
+ 	 */
+@@ -244,7 +244,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
+ 		thinkingLevel = clampThinkingLevel(model, thinkingLevel) as ThinkingLevel;
+ 	}
+ 
+-	const defaultActiveToolNames: ToolName[] = ["read", "bash", "edit", "write"];
++	const defaultActiveToolNames: ToolName[] = ["read", "bash", "edit", "write", "ipython"];
+ 	const configuredDefaultToolNames = settingsManager.getDefaultTools();
+ 	const allowedToolNames = options.tools ?? (options.noTools === "all" ? [] : undefined);
+ 	const excludedToolNames = options.excludeTools;
+diff --git a/packages/coding-agent/src/core/tools/index.ts b/packages/coding-agent/src/core/tools/index.ts
+index e55f91406..60bc33d83 100644
+--- a/packages/coding-agent/src/core/tools/index.ts
++++ b/packages/coding-agent/src/core/tools/index.ts
+@@ -34,6 +34,13 @@ export {
+ 	type GrepToolInput,
+ 	type GrepToolOptions,
+ } from "./grep.ts";
++export {
++	createIpythonTool,
++	createIpythonToolDefinition,
++	type IpythonToolDetails,
++	type IpythonToolInput,
++	type IpythonToolOptions,
++} from "./ipython.ts";
+ export {
+ 	createLsTool,
+ 	createLsToolDefinition,
+@@ -74,14 +81,15 @@ import { type BashToolOptions, createBashTool, createBashToolDefinition } from "
+ import { createEditTool, createEditToolDefinition, type EditToolOptions } from "./edit.ts";
+ import { createFindTool, createFindToolDefinition, type FindToolOptions } from "./find.ts";
+ import { createGrepTool, createGrepToolDefinition, type GrepToolOptions } from "./grep.ts";
++import { createIpythonTool, createIpythonToolDefinition, type IpythonToolOptions } from "./ipython.ts";
+ import { createLsTool, createLsToolDefinition, type LsToolOptions } from "./ls.ts";
+ import { createReadTool, createReadToolDefinition, type ReadToolOptions } from "./read.ts";
+ import { createWriteTool, createWriteToolDefinition, type WriteToolOptions } from "./write.ts";
+ 
+ export type Tool = AgentTool<any>;
+ export type ToolDef = ToolDefinition<any, any>;
+-export type ToolName = "read" | "bash" | "edit" | "write" | "grep" | "find" | "ls";
+-export const allToolNames: Set<ToolName> = new Set(["read", "bash", "edit", "write", "grep", "find", "ls"]);
++export type ToolName = "read" | "bash" | "edit" | "write" | "grep" | "find" | "ls" | "ipython";
++export const allToolNames: Set<ToolName> = new Set(["read", "bash", "edit", "write", "grep", "find", "ls", "ipython"]);
+ 
+ export interface ToolsOptions {
+ 	read?: ReadToolOptions;
+@@ -91,6 +99,7 @@ export interface ToolsOptions {
+ 	grep?: GrepToolOptions;
+ 	find?: FindToolOptions;
+ 	ls?: LsToolOptions;
++	ipython?: IpythonToolOptions;
+ }
+ 
+ export function createToolDefinition(toolName: ToolName, cwd: string, options?: ToolsOptions): ToolDef {
+@@ -109,6 +118,8 @@ export function createToolDefinition(toolName: ToolName, cwd: string, options?:
+ 			return createFindToolDefinition(cwd, options?.find);
+ 		case "ls":
+ 			return createLsToolDefinition(cwd, options?.ls);
++		case "ipython":
++			return createIpythonToolDefinition(cwd, options?.ipython);
+ 		default:
+ 			throw new Error(`Unknown tool name: ${toolName}`);
+ 	}
+@@ -130,6 +141,8 @@ export function createTool(toolName: ToolName, cwd: string, options?: ToolsOptio
+ 			return createFindTool(cwd, options?.find);
+ 		case "ls":
+ 			return createLsTool(cwd, options?.ls);
++		case "ipython":
++			return createIpythonTool(cwd, options?.ipython);
+ 		default:
+ 			throw new Error(`Unknown tool name: ${toolName}`);
+ 	}
+@@ -162,6 +175,7 @@ export function createAllToolDefinitions(cwd: string, options?: ToolsOptions): R
+ 		grep: createGrepToolDefinition(cwd, options?.grep),
+ 		find: createFindToolDefinition(cwd, options?.find),
+ 		ls: createLsToolDefinition(cwd, options?.ls),
++		ipython: createIpythonToolDefinition(cwd, options?.ipython),
+ 	};
+ }
+ 
+@@ -192,5 +206,6 @@ export function createAllTools(cwd: string, options?: ToolsOptions): Record<Tool
+ 		grep: createGrepTool(cwd, options?.grep),
+ 		find: createFindTool(cwd, options?.find),
+ 		ls: createLsTool(cwd, options?.ls),
++		ipython: createIpythonTool(cwd, options?.ipython),
+ 	};
+ }
+diff --git a/packages/coding-agent/src/core/tools/ipython.ts b/packages/coding-agent/src/core/tools/ipython.ts
+new file mode 100644
+index 000000000..05b0bb4e0
+--- /dev/null
++++ b/packages/coding-agent/src/core/tools/ipython.ts
+@@ -0,0 +1,143 @@
++// TODO: reconsider whether the persistent kernel is needed once RLM-1 weights land.
++import type { AgentTool } from "@earendil-works/pi-agent-core";
++import { type Static, Type } from "typebox";
++import type { ToolDefinition } from "../extensions/types.ts";
++import { KernelManager } from "../kernel/index.ts";
++import type { RlmRunHandler } from "../rlm-runtime.ts";
++import { wrapToolDefinition } from "./tool-definition-wrapper.ts";
++
++const RLM_BOOTSTRAP_CODE = `
++try:
++    import rlm as _pi_rlm_module
++    rlm = _pi_rlm_module.rlm
++except Exception as _pi_rlm_error:
++    _PI_RLM_IMPORT_ERROR = str(_pi_rlm_error)
++
++    class _PiMissingRlm:
++        async def run(self, prompt, **kwargs):
++            raise RuntimeError(
++                "pi-rlm-runtime is not installed in this IPython kernel. "
++                "Remove ~/.pi/agent/kernel-venv so pi can rebuild it, or set "
++                "PI_RLM_KERNEL_PYTHON to a kernel environment with pi-rlm-runtime installed. "
++                f"Import error: {_PI_RLM_IMPORT_ERROR}"
++            )
++
++        async def __call__(self, prompt, **kwargs):
++            return await self.run(prompt, **kwargs)
++
++    rlm = _PiMissingRlm()
++`.trim();
++
++const ipythonSchema = Type.Object({
++	code: Type.String({
++		description:
++			"Python code to execute. State (variables, imports, loaded data) persists across calls. " +
++			"Shell commands available via `!cmd` (single-line) or `%%bash` (multi-line cell).",
++	}),
++});
++
++export type IpythonToolInput = Static<typeof ipythonSchema>;
++
++export interface IpythonToolDetails {
++	durationMs?: number;
++	status?: "ok" | "error" | "aborted";
++	errorEname?: string;
++}
++
++export interface IpythonToolOptions {
++	/** Python override. Must have `ipykernel` installed. */
++	python?: string;
++	env?: Record<string, string>;
++	sessionId?: string;
++	rlmRunHandler?: RlmRunHandler;
++	/** Filled after the first kernel start so the owning session can restart it after compaction. */
++	kernelManagerRef?: { current?: KernelManager };
++}
++
++export function createIpythonToolDefinition(
++	cwd: string,
++	options?: IpythonToolOptions,
++): ToolDefinition<typeof ipythonSchema, IpythonToolDetails> {
++	// Memoize the entire create+start so concurrent first calls all await the
++	// same in-flight startup instead of creating two managers or skipping the
++	// not-yet-finished start().
++	let managerPromise: Promise<KernelManager> | undefined;
++	if (options?.kernelManagerRef) {
++		options.kernelManagerRef.current = undefined;
++	}
++
++	function getManager(): Promise<KernelManager> {
++		if (!managerPromise) {
++			managerPromise = (async () => {
++				const m = new KernelManager({
++					python: options?.python,
++					cwd,
++					env: options?.env,
++					sessionId: options?.sessionId,
++					rlmRunHandler: options?.rlmRunHandler,
++				});
++				await m.start();
++				const bootstrap = await m.execute(RLM_BOOTSTRAP_CODE);
++				if (bootstrap.status !== "ok") {
++					const details = [bootstrap.stderr, bootstrap.error?.traceback.join("\n")].filter(Boolean).join("\n");
++					throw new Error(`Failed to initialize rlm runtime in the IPython kernel:\n${details}`);
++				}
++				if (options?.kernelManagerRef) {
++					options.kernelManagerRef.current = m;
++				}
++				return m;
++			})();
++		}
++		return managerPromise;
++	}
++
++	return {
++		name: "ipython",
++		label: "ipython",
++		description:
++			"Execute Python code in a persistent IPython kernel. Variables, imports, and loaded data " +
++			"persist across calls. Shell commands available inside Python via `!cmd` (single-line) " +
++			"or `%%bash` (multi-line cells).",
++		promptSnippet: "ipython - execute Python in a persistent kernel; state survives across calls",
++		promptGuidelines: [
++			"Use IPython as a persistent control environment; project commands should run through the project's own environment",
++			`A callable rlm is preloaded in IPython; use await rlm("sub-task") for recursive child sessions when delegation helps`,
++		],
++		// The kernel is single-threaded — pi must not run two ipython calls in parallel within a batch.
++		executionMode: "sequential",
++		parameters: ipythonSchema,
++		execute: async (_toolCallId, params, signal, onUpdate) => {
++			const m = await getManager();
++			const r = await m.execute(params.code, {
++				signal,
++				onStream: (chunk) => {
++					onUpdate?.({
++						content: [{ type: "text", text: chunk }],
++						details: { status: "ok" },
++					});
++				},
++			});
++
++			let text = r.stdout;
++			if (r.stderr) text += (text ? "\n" : "") + r.stderr;
++			if (r.result) text += (text ? "\n" : "") + r.result;
++			if (r.status === "error" && r.error) {
++				text += (text ? "\n" : "") + r.error.traceback.join("\n");
++			}
++
++			return {
++				content: [{ type: "text", text: text || "" }],
++				details: {
++					durationMs: r.durationMs,
++					status: r.status,
++					errorEname: r.error?.ename,
++				},
++				isError: r.status === "error" || r.status === "aborted",
++			};
++		},
++	};
++}
++
++export function createIpythonTool(cwd: string, options?: IpythonToolOptions): AgentTool<typeof ipythonSchema> {
++	return wrapToolDefinition(createIpythonToolDefinition(cwd, options));
++}
+diff --git a/packages/coding-agent/test/rlm-kernel.test.ts b/packages/coding-agent/test/rlm-kernel.test.ts
+new file mode 100644
+index 000000000..ed81cb749
+--- /dev/null
++++ b/packages/coding-agent/test/rlm-kernel.test.ts
+@@ -0,0 +1,67 @@
++import { existsSync } from "node:fs";
++import { resolve } from "node:path";
++import { describe, expect, it } from "vitest";
++import type { ExtensionContext } from "../src/core/extensions/types.ts";
++import type { KernelManager } from "../src/core/kernel/index.ts";
++import { createIpythonToolDefinition } from "../src/core/tools/ipython.ts";
++
++const python = process.env.PI_RLM_TEST_PYTHON;
++const run = python && existsSync(python) ? it : it.skip;
++
++describe("pi RLM kernel overlay", () => {
++	run(
++		"keeps Python state and dispatches rlm calls through the host",
++		async () => {
++			const kernelManagerRef: { current?: KernelManager } = {};
++			const context = {} as ExtensionContext;
++			const tool = createIpythonToolDefinition(process.cwd(), {
++				python,
++				env: {
++					PYTHONPATH: resolve("packages/coding-agent/runtime/src"),
++					RLM_DEPTH: "0",
++					RLM_MAX_DEPTH: "1",
++				},
++				kernelManagerRef,
++				rlmRunHandler: async ({ prompt, kwargs }) => ({
++					answer: `${prompt}:${String(kwargs.model)}`,
++					usage: { prompt_tokens: 2, completion_tokens: 3 },
++					turns: 1,
++					session_dir: null,
++				}),
++			});
++
++			try {
++				const first = await tool.execute(
++					"state",
++					{ code: "value = 41" },
++					new AbortController().signal,
++					undefined,
++					context,
++				);
++				expect(first.details?.status).toBe("ok");
++
++				const second = await tool.execute(
++					"state-read",
++					{ code: "value + 1" },
++					new AbortController().signal,
++					undefined,
++					context,
++				);
++				expect(second.content).toEqual([{ type: "text", text: "42" }]);
++
++				const recursive = await tool.execute(
++					"rlm",
++					{ code: 'result = await rlm("child", model="google/gemini-test")\nresult.answer' },
++					new AbortController().signal,
++					undefined,
++					context,
++				);
++				expect(recursive.details?.status).toBe("ok");
++				expect(recursive.content).toEqual([{ type: "text", text: "'child:google/gemini-test'" }]);
++			} finally {
++				await kernelManagerRef.current?.shutdown();
++			}
++		},
++		20_000,
++	);
++});
+diff --git a/packages/coding-agent/test/suite/regressions/3592-no-builtin-tools-keeps-extension-tools.test.ts b/packages/coding-agent/test/suite/regressions/3592-no-builtin-tools-keeps-extension-tools.test.ts
+index 3d900ee36..f1909f887 100644
+--- a/packages/coding-agent/test/suite/regressions/3592-no-builtin-tools-keeps-extension-tools.test.ts
++++ b/packages/coding-agent/test/suite/regressions/3592-no-builtin-tools-keeps-extension-tools.test.ts
+@@ -78,7 +78,7 @@ describe("regression #3592: no-builtin-tools keeps extension tools enabled", ()
+ 				.getAllTools()
+ 				.map((tool) => tool.name)
+ 				.sort(),
+-		).toEqual(["bash", "dynamic_tool", "edit", "find", "grep", "ls", "read", "write"]);
++		).toEqual(["bash", "dynamic_tool", "edit", "find", "grep", "ipython", "ls", "read", "write"]);
+ 		expect(session.getActiveToolNames()).toEqual(["dynamic_tool"]);
+ 		expect(session.systemPrompt).toContain("- dynamic_tool: Run dynamic test behavior");
+ 		expect(session.systemPrompt).not.toContain("- read:");
+diff --git a/scripts/generate-coding-agent-install-lock.mjs b/scripts/generate-coding-agent-install-lock.mjs
+index 881205d2d..5fac08ef3 100644
+--- a/scripts/generate-coding-agent-install-lock.mjs
++++ b/scripts/generate-coding-agent-install-lock.mjs
+@@ -16,6 +16,7 @@ const installPackageName = "@earendil-works/pi-coding-agent-install";
+ const allowedInstallScriptPackages = new Map([
+ 	["@google/genai@1.52.0", "preinstall is a no-op in the published package"],
+ 	["protobufjs@7.6.5", "postinstall only warns about protobufjs version scheme mismatches"],
++	["zeromq@6.5.0", "install verifies the bundled native addon and builds it only when unavailable"],
+ ]);
+ 
+ const args = new Set(process.argv.slice(2));
+diff --git a/scripts/generate-coding-agent-shrinkwrap.mjs b/scripts/generate-coding-agent-shrinkwrap.mjs
+index 06b1a2283..ee882065d 100644
+--- a/scripts/generate-coding-agent-shrinkwrap.mjs
++++ b/scripts/generate-coding-agent-shrinkwrap.mjs
+@@ -13,6 +13,7 @@ const internalPackagePrefix = "@earendil-works/pi-";
+ const allowedInstallScriptPackages = new Map([
+ 	["@google/genai@1.52.0", "preinstall is a no-op in the published package"],
+ 	["protobufjs@7.6.5", "postinstall only warns about protobufjs version scheme mismatches"],
++	["zeromq@6.5.0", "install verifies the bundled native addon and builds it only when unavailable"],
+ ]);
+ 
+ const args = new Set(process.argv.slice(2));
+diff --git a/scripts/setup-kernel-venv.sh b/scripts/setup-kernel-venv.sh
+new file mode 100755
+index 000000000..4a2df7314
+--- /dev/null
++++ b/scripts/setup-kernel-venv.sh
+@@ -0,0 +1,4 @@
++#!/usr/bin/env bash
++set -euo pipefail
++cd "$(dirname "$0")/.."
++npx tsx packages/coding-agent/src/core/kernel/bootstrap-cli.ts
