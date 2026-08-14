@@ -22,6 +22,7 @@ import {
 	createEditTool,
 	createFindTool,
 	createGrepTool,
+	createIpythonTool,
 	createLsTool,
 	createReadOnlyTools,
 	createReadTool,
@@ -84,6 +85,10 @@ export interface CreateAgentSessionOptions {
 	settingsManager?: SettingsManager;
 	/** Session start event metadata for extension runtime startup. */
 	sessionStartEvent?: SessionStartEvent;
+	/** Internal native RLM recursion depth. Root sessions use 0. */
+	rlmDepth?: number;
+	/** Native RLM recursion limit. Defaults to PI_RLM_MAX_DEPTH or 1. */
+	rlmMaxDepth?: number;
 }
 
 /** Result from createAgentSession */
@@ -125,6 +130,7 @@ export {
 	createGrepTool,
 	createFindTool,
 	createLsTool,
+	createIpythonTool,
 };
 
 // Helper Functions
@@ -244,7 +250,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		thinkingLevel = clampThinkingLevel(model, thinkingLevel) as ThinkingLevel;
 	}
 
-	const defaultActiveToolNames: ToolName[] = ["read", "bash", "edit", "write"];
+	const defaultActiveToolNames: ToolName[] = ["read", "bash", "edit", "write", "ipython"];
 	const configuredDefaultToolNames = settingsManager.getDefaultTools();
 	const allowedToolNames = options.tools ?? (options.noTools === "all" ? [] : undefined);
 	const excludedToolNames = options.excludeTools;
@@ -390,6 +396,22 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		excludedToolNames,
 		extensionRunnerRef,
 		sessionStartEvent: options.sessionStartEvent,
+		rlmDepth: options.rlmDepth,
+		rlmMaxDepth: options.rlmMaxDepth,
+		createRlmChild: async (childSessionManager, depth) => {
+			const child = await createAgentSession({
+				cwd,
+				agentDir,
+				modelRuntime,
+				model,
+				thinkingLevel,
+				scopedModels: options.scopedModels,
+				sessionManager: childSessionManager,
+				rlmDepth: depth,
+				rlmMaxDepth: options.rlmMaxDepth,
+			});
+			return child.session;
+		},
 	});
 	const extensionsResult = resourceLoader.getExtensions();
 
