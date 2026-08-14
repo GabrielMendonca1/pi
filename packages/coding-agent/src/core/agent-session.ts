@@ -13,16 +13,18 @@
  * Modes use this class and add their own I/O layer on top.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, dirname } from "node:path";
-import type {
+import { randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { basename, dirname, join } from "node:path";
+import {
 	Agent,
-	AgentEvent,
-	AgentMessage,
-	AgentState,
-	AgentTool,
-	PrepareNextTurnContext,
-	ThinkingLevel,
+	type AgentEvent,
+	type AgentMessage,
+	type AgentState,
+	type AgentTool,
+	type PrepareNextTurnContext,
+	type ThinkingLevel,
 } from "@earendil-works/pi-agent-core";
 import { contentText } from "@earendil-works/pi-ai";
 import type {
@@ -94,13 +96,20 @@ import {
 	wrapRegisteredTools,
 } from "./extensions/index.ts";
 import { emitSessionShutdownEvent } from "./extensions/runner.ts";
+import type { KernelManager } from "./kernel/index.ts";
 import type { BashExecutionMessage, CustomMessage } from "./messages.ts";
 import { ModelRegistry } from "./model-registry.ts";
 import type { ModelRuntime } from "./model-runtime.ts";
 import { expandPromptTemplate, type PromptTemplate } from "./prompt-templates.ts";
 import type { ResourceExtensionPaths, ResourceLoader } from "./resource-loader.ts";
-import type { BranchSummaryEntry, CompactionEntry, SessionEntry, SessionManager } from "./session-manager.ts";
-import { CURRENT_SESSION_VERSION, getLatestCompactionEntry, type SessionHeader } from "./session-manager.ts";
+import type { RlmRunResult, RlmUsage } from "./rlm-runtime.ts";
+import type { BranchSummaryEntry, CompactionEntry, SessionEntry } from "./session-manager.ts";
+import {
+	CURRENT_SESSION_VERSION,
+	getLatestCompactionEntry,
+	type SessionHeader,
+	SessionManager,
+} from "./session-manager.ts";
 import type { SettingsManager } from "./settings-manager.ts";
 import type { SlashCommandInfo } from "./slash-commands.ts";
 import { createSyntheticSourceInfo, type SourceInfo } from "./source-info.ts";
@@ -208,7 +217,7 @@ export interface AgentSessionConfig {
 	customTools?: ToolDefinition[];
 	/** Canonical model/auth runtime used by coding-agent internals. */
 	modelRuntime: ModelRuntime;
-	/** Initial active built-in tool names. Default: [read, bash, edit, write] */
+	/** Initial active built-in tool names. Default: [read, bash, edit, write, ipython] */
 	initialActiveToolNames?: string[];
 	/** Optional allowlist of tool names. When provided, only these tool names are exposed. */
 	allowedToolNames?: string[];
@@ -225,6 +234,12 @@ export interface AgentSessionConfig {
 	extensionRunnerRef?: { current?: ExtensionRunner };
 	/** Session start event metadata emitted when extensions bind to this runtime. */
 	sessionStartEvent?: SessionStartEvent;
+	/** Current recursive language model depth. Root sessions default to RLM_DEPTH or 0. */
+	rlmDepth?: number;
+	/** Maximum recursive depth. Defaults to RLM_MAX_DEPTH or 1. */
+	rlmMaxDepth?: number;
+	/** Directory for child-session artifacts. */
+	rlmSessionDir?: string;
 }
 
 export interface ExtensionBindings {
@@ -298,6 +313,17 @@ function estimateMessagesTokens(messages: AgentMessage[]): number {
 /** Standard thinking levels */
 const THINKING_LEVELS: ThinkingLevel[] = ["off", "minimal", "low", "medium", "high"];
 
+function parseRlmDepth(value: string | undefined, fallback: number, name: string): number {
+	if (value === undefined || value === "") return fallback;
+	const parsed = Number.parseInt(value, 10);
+	if (!Number.isFinite(parsed) || parsed < 0) throw new Error(`${name} must be a non-negative integer`);
+	return parsed;
+}
+
+function emptyRlmUsage(): RlmUsage {
+	return { prompt_tokens: 0, completion_tokens: 0 };
+}
+
 // ============================================================================
 // AgentSession Class
 // ============================================================================
@@ -360,6 +386,10 @@ export class AgentSession {
 	private _extensionShutdownHandler?: ShutdownHandler;
 	private _extensionErrorListener?: ExtensionErrorListener;
 	private _extensionErrorUnsubscriber?: () => void;
+	private _ipythonKernelManagerRef: { current?: KernelManager } = {};
+	private _rlmDepth: number;
+	private _rlmMaxDepth: number;
+	private _rlmSessionDir?: string;
 
 	private _modelRuntime: ModelRuntime;
 
@@ -389,6 +419,9 @@ export class AgentSession {
 		this._excludedToolNames = config.excludedToolNames ? new Set(config.excludedToolNames) : undefined;
 		this._baseToolsOverride = config.baseToolsOverride;
 		this._sessionStartEvent = config.sessionStartEvent ?? { type: "session_start", reason: "startup" };
+		this._rlmDepth = config.rlmDepth ?? parseRlmDepth(process.env.RLM_DEPTH, 0, "RLM_DEPTH");
+		this._rlmMaxDepth = config.rlmMaxDepth ?? parseRlmDepth(process.env.RLM_MAX_DEPTH, 1, "RLM_MAX_DEPTH");
+		this._rlmSessionDir = config.rlmSessionDir;
 
 		// Always subscribe to agent events for internal handling
 		// (session persistence, extensions, auto-compaction, retry logic)
@@ -2571,6 +2604,12 @@ export class AgentSession {
 			: createAllToolDefinitions(this._cwd, {
 					read: { autoResizeImages },
 					bash: { commandPrefix: shellCommandPrefix, shellPath },
+					ipython: {
+						kernelManagerRef: this._ipythonKernelManagerRef,
+						env: this._rlmKernelEnv(),
+						sessionId: this.sessionId,
+						rlmRunHandler: ({ prompt, kwargs }) => this.runRlmChild(prompt, kwargs),
+					},
 				});
 
 		this._baseToolDefinitions = new Map(
@@ -2599,7 +2638,7 @@ export class AgentSession {
 
 		const defaultActiveToolNames = this._baseToolsOverride
 			? Object.keys(this._baseToolsOverride)
-			: ["read", "bash", "edit", "write"];
+			: ["read", "bash", "edit", "write", "ipython"];
 		const baseActiveToolNames = options.activeToolNames ?? defaultActiveToolNames;
 		this._refreshToolRegistry({
 			activeToolNames: baseActiveToolNames,
@@ -2631,6 +2670,139 @@ export class AgentSession {
 			await options?.beforeSessionStart?.();
 			await this._extensionRunner.emit({ type: "session_start", reason: "reload" });
 			await this.extendResourcesFromExtensions("reload");
+		}
+	}
+
+	private _rlmKernelEnv(): Record<string, string> {
+		return {
+			RLM_DEPTH: String(this._rlmDepth),
+			RLM_MAX_DEPTH: String(this._rlmMaxDepth),
+			RLM_SESSION_DIR: this._ensureRlmSessionDir(),
+		};
+	}
+
+	private _ensureRlmSessionDir(): string {
+		if (this._rlmSessionDir) {
+			mkdirSync(this._rlmSessionDir, { recursive: true });
+			return this._rlmSessionDir;
+		}
+		const sessionFile = this.sessionManager.getSessionFile();
+		if (sessionFile) {
+			this._rlmSessionDir = `${sessionFile}.rlm`;
+			mkdirSync(this._rlmSessionDir, { recursive: true });
+			return this._rlmSessionDir;
+		}
+		this._rlmSessionDir = mkdtempSync(join(tmpdir(), "pi-rlm-"));
+		return this._rlmSessionDir;
+	}
+
+	private _createChildRlmSessionDir(): string {
+		const parentDir = this._ensureRlmSessionDir();
+		for (let attempt = 0; attempt < 100; attempt++) {
+			const childDir = join(parentDir, `sub-${randomUUID().slice(0, 8)}`);
+			try {
+				mkdirSync(childDir);
+				return childDir;
+			} catch (error) {
+				if (error instanceof Error && "code" in error && error.code === "EEXIST") continue;
+				throw error;
+			}
+		}
+		throw new Error("Unable to create unique RLM child session directory");
+	}
+
+	private _usageForCurrentMessages(): RlmUsage {
+		const usage = emptyRlmUsage();
+		for (const message of this.agent.state.messages) {
+			if (message.role !== "assistant") continue;
+			const assistantUsage = (message as AssistantMessage).usage;
+			usage.prompt_tokens += assistantUsage.input + assistantUsage.cacheRead + assistantUsage.cacheWrite;
+			usage.completion_tokens += assistantUsage.output;
+		}
+		return usage;
+	}
+
+	async runRlmChild(prompt: string, kwargs: Record<string, unknown> = {}): Promise<RlmRunResult> {
+		if (this._rlmDepth >= this._rlmMaxDepth) {
+			throw new Error(
+				`RLM recursion depth limit reached (RLM_DEPTH=${this._rlmDepth}, RLM_MAX_DEPTH=${this._rlmMaxDepth})`,
+			);
+		}
+
+		const requestedModel = kwargs.model;
+		const requestedThinking = kwargs.thinking;
+		const unsupportedKwargs = Object.keys(kwargs).filter((key) => key !== "model" && key !== "thinking");
+		if (unsupportedKwargs.length > 0) {
+			throw new Error(`Unsupported rlm.run kwargs: ${unsupportedKwargs.sort().join(", ")}`);
+		}
+		if (requestedModel !== undefined && typeof requestedModel !== "string") {
+			throw new Error("rlm.run model must be a provider/model string");
+		}
+		if (requestedThinking !== undefined && !THINKING_LEVELS.includes(requestedThinking as ThinkingLevel)) {
+			throw new Error(`rlm.run thinking must be one of: ${THINKING_LEVELS.join(", ")}`);
+		}
+
+		let model = this.model;
+		if (requestedModel) {
+			const slash = requestedModel.indexOf("/");
+			if (slash <= 0 || slash === requestedModel.length - 1) {
+				throw new Error("rlm.run model must use provider/model format");
+			}
+			model = this._modelRuntime.getModel(requestedModel.slice(0, slash), requestedModel.slice(slash + 1));
+			if (!model) throw new Error(`Unknown RLM model: ${requestedModel}`);
+		}
+		if (!model) throw new Error(formatNoModelSelectedMessage());
+
+		const thinkingLevel = (requestedThinking as ThinkingLevel | undefined) ?? this.thinkingLevel;
+		const childSessionDir = this._createChildRlmSessionDir();
+		const childSessionManager = SessionManager.create(this._cwd, childSessionDir);
+		childSessionManager.appendModelChange(model.provider, model.id);
+		childSessionManager.appendThinkingLevelChange(thinkingLevel);
+
+		const childAgent = new Agent({
+			initialState: { systemPrompt: "", model, thinkingLevel, tools: [] },
+			convertToLlm: this.agent.convertToLlm,
+			transformContext: this.agent.transformContext,
+			streamFn: this.agent.streamFunction,
+			getApiKey: this.agent.getApiKey,
+			onPayload: this.agent.onPayload,
+			onResponse: this.agent.onResponse,
+			steeringMode: this.settingsManager.getSteeringMode(),
+			followUpMode: this.settingsManager.getFollowUpMode(),
+			sessionId: childSessionManager.getSessionId(),
+			thinkingBudgets: this.settingsManager.getThinkingBudgets(),
+			transport: this.settingsManager.getTransport(),
+			maxRetryDelayMs: this.settingsManager.getProviderRetrySettings().maxRetryDelayMs,
+			toolExecution: this.agent.toolExecution,
+		});
+		const child = new AgentSession({
+			agent: childAgent,
+			sessionManager: childSessionManager,
+			settingsManager: this.settingsManager,
+			cwd: this._cwd,
+			scopedModels: this._scopedModels,
+			resourceLoader: this._resourceLoader,
+			customTools: this._customTools,
+			modelRuntime: this._modelRuntime,
+			initialActiveToolNames: this.getActiveToolNames(),
+			allowedToolNames: this._allowedToolNames ? [...this._allowedToolNames] : undefined,
+			excludedToolNames: this._excludedToolNames ? [...this._excludedToolNames] : undefined,
+			rlmDepth: this._rlmDepth + 1,
+			rlmMaxDepth: this._rlmMaxDepth,
+			rlmSessionDir: childSessionDir,
+			sessionStartEvent: { type: "session_start", reason: "startup" },
+		});
+
+		try {
+			await child.prompt(prompt, { expandPromptTemplates: false, source: "extension" });
+			return {
+				answer: child.getLastAssistantText() ?? "",
+				usage: child._usageForCurrentMessages(),
+				turns: child.agent.state.messages.filter((message) => message.role === "assistant").length,
+				session_dir: childSessionDir,
+			};
+		} finally {
+			child.dispose();
 		}
 	}
 
