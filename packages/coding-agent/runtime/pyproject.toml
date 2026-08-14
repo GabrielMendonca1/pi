@@ -1,0 +1,9 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pi-rlm-runtime"
+version = "1.0.0"
+description = "Python bridge for pi recursive language model sessions"
+requires-python = ">=3.11"

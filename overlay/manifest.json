@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "name": "pi-rlm-overlay",
+  "officialRepository": "https://github.com/earendil-works/pi.git",
+  "officialPackage": "@earendil-works/pi-coding-agent",
+  "overlayBase": "e429d90b800f9a37c8a5812f4c9c10a8cdcc85a7",
+  "overlayCommit": "1ef2653dcadb47518fc44b3aa15634f24c837142",
+  "patch": "overlay/rlm.patch",
+  "patchSha256": "c8b09609cf3806a2e12b223976c56a0d9c1eaebea1caecc502a36ae21051d864",
+  "compatibility": {
+    "commands": [
+      "npm ci --ignore-scripts",
+      "npm -w packages/ai run hydrate-model-data",
+      "npm run check",
+      "npm run build",
+      "vitest rlm + builtin-tool regression",
+      "npm pack + installed CLI smoke"
+    ],
+    "forbiddenOverlayMarkers": [
+      "prime-agent",
+      "prime agent",
+      ".prime/agent"
+    ]
+  }
+}

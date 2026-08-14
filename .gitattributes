@@ -21,3 +21,6 @@
 *.gz binary
 *.woff binary
 *.woff2 binary
+
+# Generated patch payloads preserve upstream whitespace verbatim
+overlay/*.patch -whitespace
