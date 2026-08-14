@@ -44,7 +44,7 @@ The default store is `~/.local/share/pi-rlm-overlay`:
 - `current`: active release symlink
 - `previous`: prior release symlink
 - `bin/pi-wrapper`: stable launcher
-- `launcher-backups/pi.<timestamp>`: launcher that preceded the first overlay activation
+- `backups/<timestamp>/pi`: launcher that preceded the overlay activation (with an exact `restore.txt` command)
 
 The installer replaces only `~/.local/bin/pi`, after creating a dated backup when one already exists. It does not remove or modify Prime Agent, Homebrew packages, `~/.prime`, or existing Pi state under `~/.pi`.
 
@@ -54,7 +54,7 @@ Exact automatic rollback:
 pi rlm-rollback
 ```
 
-To leave the overlay entirely, move a dated file from `~/.local/share/pi-rlm-overlay/launcher-backups/` back to `~/.local/bin/pi`. Preserve the file type: backups of symlinks remain symlinks.
+To leave the overlay entirely, run the `restore.txt` command from the desired dated directory under `~/.local/share/pi-rlm-overlay/backups/`. Preserve the file type: backups of symlinks remain symlinks.
 
 ## RLM runtime
 
