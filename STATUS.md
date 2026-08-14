@@ -19,8 +19,8 @@ Run genuine upstream Pi for every release while preserving RLM as a local, versi
 - Installed RLM smoke test proved persistent kernel state (`40` → `42`) and a recursive host call; the venv imports `rlm` and `ipykernel` from `~/.pi/agent/kernel-venv`.
 - A live PTY process reports `comm=pi` and `args=pi`, satisfying herdr's Pi identity prerequisite. Herdr's default server was offline, so its live `agent explain` endpoint could not be queried.
 - Upstream catalogs contain Google Gemini models and workflow configuration contains no Google/Gemini model. Upstream Pi intentionally hides unauthenticated providers from `/model`; no `GEMINI_API_KEY` is configured, so selector visibility remains credential-blocked rather than being faked.
+- Branch pushed and PR opened: https://github.com/GabrielMendonca1/pi/pull/2
 
 ## Remaining
 
 - Configure a valid Gemini API key with upstream Pi `/login` to make Gemini appear in the general selector.
-- Push branch and open the PR.
